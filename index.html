@@ -6,18 +6,248 @@
     <title>Solar Tracking Simulator</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-    <!-- LANDING PAGE -->
+
+    <!-- ==================== LANDING PAGE ==================== -->
     <div id="landingPage" class="page">
+
         <div class="landing-container">
+
             <div class="landing-content">
+
                 <div class="sun-icon">☀️</div>
+
                 <h1>Solar Tracking Simulator</h1>
-                <p class="subtitle">Interactive demonstration of automatic solar panel tracking</p>
-                <button id="startBtn" class="btn-start">▶ START SIMULATION</button>
+
+                <p class="subtitle">
+                    Interactive demonstration of automatic solar panel tracking
+                </p>
+
+                <button id="startBtn" class="btn-start">
+                    ▶ START SIMULATION
+                </button>
+
             </div>
+
         </div>
+
     </div>
 
-    <!-- SIMULATION PAGE -->
-    <div
+
+    <!-- ==================== SIMULATION PAGE ==================== -->
+    <div id="simulationPage" class="page hidden">
+
+        <div class="sim-container">
+
+            <h1>Solar Tracking Simulation</h1>
+
+            <!-- Canvas -->
+            <div class="canvas-wrapper">
+
+                <canvas
+                    id="simulationCanvas"
+                    width="1200"
+                    height="600">
+                </canvas>
+
+            </div>
+
+
+            <!-- Controls -->
+            <div class="control-bar">
+
+                <div class="controls">
+
+                    <button id="pauseBtn" class="btn-control">
+                        ⏸ Pause
+                    </button>
+
+                    <button id="restartBtn" class="btn-control">
+                        ↻ Restart
+                    </button>
+
+                    <button id="speedBtn" class="btn-speed">
+                        1×
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- Statistics -->
+            <div class="stats-panel">
+
+                <div class="stat-group">
+
+                    <div class="stat-box">
+
+                        <div class="stat-label">
+                            Sun Angle
+                        </div>
+
+                        <div id="sunAngle" class="stat-value">
+                            0°
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-box">
+
+                        <div class="stat-label">
+                            Panel Angle
+                        </div>
+
+                        <div id="panelAngle" class="stat-value">
+                            90°
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-box">
+
+                        <div class="stat-label">
+                            Alignment
+                        </div>
+
+                        <div id="alignment" class="stat-value">
+                            90°
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-box highlight">
+
+                        <div class="stat-label">
+                            Power Output
+                        </div>
+
+                        <div id="powerOutput" class="stat-value">
+                            0 W
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==================== RESULTS PAGE ==================== -->
+    <div id="resultsPage" class="page hidden">
+
+        <div class="results-container">
+
+            <h1>Simulation Results</h1>
+
+
+            <!-- Results Summary -->
+            <div class="results-summary">
+
+                <div class="result-card">
+
+                    <h3>Tracking Panel</h3>
+
+                    <div id="trackingAvg" class="result-value">
+                        0 W
+                    </div>
+
+                    <p class="result-label">
+                        Average simulated output
+                    </p>
+
+                </div>
+
+
+                <div class="result-card">
+
+                    <h3>Fixed Panel</h3>
+
+                    <div id="fixedAvg" class="result-value">
+                        0 W
+                    </div>
+
+                    <p class="result-label">
+                        Average simulated output
+                    </p>
+
+                </div>
+
+
+                <div class="result-card improvement">
+
+                    <h3>Improvement</h3>
+
+                    <div id="improvement" class="result-value">
+                        +0%
+                    </div>
+
+                    <p class="result-label">
+                        Tracking advantage
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- Graph -->
+            <div class="graph-container">
+
+                <h2>Power Output Comparison</h2>
+
+                <p class="graph-subtitle">
+                    Conceptual comparison between tracking and fixed panels
+                </p>
+
+                <canvas
+                    id="comparisonGraph"
+                    width="900"
+                    height="450">
+                </canvas>
+
+            </div>
+
+
+            <!-- Conclusion -->
+            <div class="conclusion">
+
+                <p>
+                    <strong>Conclusion:</strong>
+                    Automatic solar tracking keeps the panel better aligned
+                    with incoming sunlight, resulting in higher simulated
+                    energy capture compared with a fixed panel.
+                </p>
+
+            </div>
+
+
+            <!-- Restart -->
+            <div class="results-actions">
+
+                <button
+                    id="restartFromResults"
+                    class="btn-control">
+                    ↻ Run Simulation Again
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- JavaScript -->
+    <script src="script.js"></script>
+
+</body>
+</html>
