@@ -36,6 +36,7 @@ class SolarTrackingSimulator {
     // ==================== PAGE NAVIGATION ====================
 
     startSimulation() {
+        console.log('Start button clicked!');
         this.landingPage.classList.add('hidden');
         this.simulationPage.classList.remove('hidden');
         this.resultsPage.classList.add('hidden');
@@ -98,34 +99,25 @@ class SolarTrackingSimulator {
         const progress = this.simulationTime / this.simulationDuration;
 
         // Calculate sun position (0-180 degrees, left to right)
-        // Sun rises at 0°, peaks at 90°, sets at 180°
         const sunAngle = progress * 180;
 
-        // ===== TRACKING PANEL =====
-        // Panel automatically rotates to maintain ~90° perpendicular angle to incoming light
-        // If sun is at angle X, panel should face angle X + 90 (to be perpendicular)
+        // TRACKING PANEL
         const trackingPanelAngle = sunAngle + 90;
-
-        // Calculate alignment (how close to perpendicular)
-        // When perpendicular, power is maximum
         const incidentAngle = Math.abs(sunAngle - (trackingPanelAngle - 90));
         const alignment = Math.max(0, 90 - incidentAngle);
-
-        // Power output is proportional to alignment (simple cosine relationship)
         const trackingPower = 1000 * (alignment / 90) * (alignment / 90);
 
-        // ===== FIXED PANEL =====
-        // Fixed panel is set at optimal morning angle (30°)
+        // FIXED PANEL
         const fixedPanelAngle = 30;
         const fixedIncidentAngle = Math.abs(sunAngle - fixedPanelAngle);
         const fixedAlignment = Math.max(0, 90 - fixedIncidentAngle);
         const fixedPower = 800 * Math.max(0, Math.cos((fixedIncidentAngle * Math.PI) / 180));
 
-        // ===== COLLECT DATA =====
+        // COLLECT DATA
         this.trackingData.push({ time: progress, power: trackingPower });
         this.fixedData.push({ time: progress, power: fixedPower });
 
-        // ===== UPDATE UI =====
+        // UPDATE UI
         document.getElementById('sunAngle').textContent = Math.round(sunAngle) + '°';
         document.getElementById('panelAngle').textContent = Math.round(trackingPanelAngle % 360) + '°';
         document.getElementById('alignment').textContent = Math.round(alignment) + '°';
@@ -160,8 +152,8 @@ class SolarTrackingSimulator {
 
         if (this.currentSunAngle === undefined) return;
 
-        // ===== DRAW SUN =====
-        const sunProgress = this.currentSunAngle / 180; // 0 to 1
+        // DRAW SUN
+        const sunProgress = this.currentSunAngle / 180;
         const sunX = w * (0.2 + sunProgress * 0.6);
         const sunY = h * 0.2 + Math.sin(sunProgress * Math.PI) * h * 0.25;
 
@@ -183,10 +175,10 @@ class SolarTrackingSimulator {
         this.ctx.lineWidth = 3;
         this.ctx.stroke();
 
-        // ===== DRAW SUNLIGHT RAYS =====
+        // DRAW SUNLIGHT RAYS
         this.drawSunrays(sunX, sunY, w * 0.5, h * 0.65);
 
-        // ===== DRAW TRACKING PANEL =====
+        // DRAW TRACKING PANEL
         this.drawPanel(
             w * 0.35,
             h * 0.65,
@@ -196,7 +188,7 @@ class SolarTrackingSimulator {
             'TRACKING PANEL'
         );
 
-        // ===== DRAW FIXED PANEL =====
+        // DRAW FIXED PANEL
         this.drawPanel(
             w * 0.65,
             h * 0.65,
@@ -206,11 +198,11 @@ class SolarTrackingSimulator {
             'FIXED PANEL'
         );
 
-        // ===== DRAW ANGLE LINES =====
+        // DRAW ANGLE LINES
         this.drawAngleLine(sunX, sunY, w * 0.35, h * 0.65, this.currentTrackingAngle, '#FF6B6B');
         this.drawAngleLine(sunX, sunY, w * 0.65, h * 0.65, this.currentFixedAngle, '#FFB6C1');
 
-        // ===== DRAW PROGRESS BAR =====
+        // DRAW PROGRESS BAR
         const progress = this.simulationTime / this.simulationDuration;
         this.drawProgressBar(progress);
     }
@@ -288,7 +280,6 @@ class SolarTrackingSimulator {
     }
 
     drawAngleLine(sunX, sunY, panelX, panelY, panelAngle, color) {
-        // Light ray from sun to panel
         this.ctx.strokeStyle = color;
         this.ctx.lineWidth = 1;
         this.ctx.setLineDash([5, 5]);
@@ -473,5 +464,6 @@ class SolarTrackingSimulator {
 // ==================== INITIALIZATION ====================
 
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('Page loaded, initializing simulator');
     new SolarTrackingSimulator();
 });
