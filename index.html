@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar Panel Simulation</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>☀️ Solar Panel Simulator</h1>
+                <p class="subtitle">Real-time solar energy simulation and tracking</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Control Panel -->
+            <section class="control-panel">
+                <h2>Controls</h2>
+                <div class="control-group">
+                    <div class="control-item">
+                        <label for="latitude">Latitude:</label>
+                        <input type="number" id="latitude" min="-90" max="90" value="18.5204" step="0.01">
+                        <span class="unit">°N</span>
+                    </div>
+                    <div class="control-item">
+                        <label for="longitude">Longitude:</label>
+                        <input type="number" id="longitude" min="-180" max="180" value="73.8567" step="0.01">
+                        <span class="unit">°E</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <div class="control-item">
+                        <label for="panelCount">Number of Panels:</label>
+                        <input type="number" id="panelCount" min="1" max="100" value="6" step="1">
+                    </div>
+                    <div class="control-item">
+                        <label for="panelEfficiency">Panel Efficiency:</label>
+                        <input type="range" id="panelEfficiency" min="0.15" max="0.25" value="0.20" step="0.01">
+                        <span class="value-display" id="efficiencyDisplay">20%</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <div class="control-item">
+                        <label for="tiltAngle">Tilt Angle:</label>
+                        <input type="range" id="tiltAngle" min="0" max="90" value="30" step="1">
+                        <span class="value-display" id="tiltDisplay">30°</span>
+                    </div>
+                    <div class="control-item">
+                        <label for="orientation">Orientation:</label>
+                        <input type="range" id="orientation" min="0" max="360" value="180" step="1">
+                        <span class="value-display" id="orientationDisplay">180° (South)</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <button id="toggleAnimation" class="btn btn-primary">⏸ Pause Simulation</button>
+                    <button id="resetButton" class="btn btn-secondary">↻ Reset</button>
+                </div>
+
+                <div class="control-group">
+                    <label for="speedControl">Simulation Speed:</label>
+                    <input type="range" id="speedControl" min="0.5" max="5" value="1" step="0.5">
+                    <span class="value-display" id="speedDisplay">1x</span>
+                </div>
+            </section>
+
+            <!-- Visualization Panel -->
+            <section class="visualization-panel">
+                <div class="sky-container">
+                    <canvas id="skyCanvas" width="600" height="400"></canvas>
+                    <div class="canvas-label">Solar Position & Intensity</div>
+                </div>
+
+                <div class="panels-container">
+                    <h3>Panel Array</h3>
+                    <canvas id="panelsCanvas" width="600" height="300"></canvas>
+                    <div class="canvas-label">Real-time Panel Visualization</div>
+                </div>
+            </section>
+
+            <!-- Statistics Panel -->
+            <section class="stats-panel">
+                <h2>Real-Time Statistics</h2>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Solar Altitude</div>
+                        <div class="stat-value" id="altitudeValue">45°</div>
+                        <div class="stat-unit">degrees above horizon</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-label">Solar Azimuth</div>
+                        <div class="stat-value" id="azimuthValue">180°</div>
+                        <div class="stat-unit">from North (clockwise)</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-label">Solar Radiation</div>
+                        <div class="stat-value" id="radiationValue">800</div>
+                        <div class="stat-unit">W/m²</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-label">Incident Angle</div>
+                        <div class="stat-value" id="incidentAngleValue">15°</div>
+                        <div class="stat-unit">angle of incidence</div>
+                    </div>
+
+                    <div class="stat-card highlight">
+                        <div class="stat-label">Total Power Output</div>
+                        <div class="stat-value" id="powerOutput">2.4</div>
+                        <div class="stat-unit">kW</div>
+                    </div>
+
+                    <div class="stat-card highlight">
+                        <div class="stat-label">Daily Energy</div>
+                        <div class="stat-value" id="dailyEnergy">18.7</div>
+                        <div class="stat-unit">kWh</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-label">Panel Efficiency</div>
+                        <div class="stat-value" id="effectiveEfficiency">68%</div>
+                        <div class="stat-unit">relative to ideal</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-label">Current Time</div>
+                        <div class="stat-value" id="currentTime">12:00</div>
+                        <div class="stat-unit">simulation time</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Energy Chart -->
+            <section class="chart-panel">
+                <h2>Energy Output Over Time</h2>
+                <canvas id="energyChart" width="900" height="300"></canvas>
+                <div class="canvas-label">24-Hour Energy Generation Profile</div>
+            </section>
+
+            <!-- Information Panel -->
+            <section class="info-panel">
+                <h2>ℹ️ About This Simulation</h2>
+                <div class="info-content">
+                    <p>This simulation models the real-world behavior of a solar panel array, including:</p>
+                    <ul>
+                        <li><strong>Solar Position Tracking:</strong> Calculates the sun's altitude and azimuth based on location and time</li>
+                        <li><strong>Radiation Calculation:</strong> Estimates solar radiation at the Earth's surface accounting for air mass</li>
+                        <li><strong>Angle of Incidence:</strong> Computes the angle between sunlight and panel surface for accurate power calculation</li>
+                        <li><strong>Energy Generation:</strong> Uses realistic efficiency curves and temperature coefficients</li>
+                        <li><strong>24-Hour Profile:</strong> Shows expected energy generation throughout a full day</li>
+                    </ul>
+                    <p><strong>Location:</strong> Set your latitude and longitude for accurate solar calculations. Default is Pune, India.</p>
+                    <p><strong>Note:</strong> This simulation uses a simplified but physically accurate model. Real-world factors like cloud cover, humidity, and dust are not included.</p>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Solar Panel Simulator v1.0 | Responsive Design for All Devices</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
