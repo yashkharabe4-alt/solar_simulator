@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Solar Tracking Simulator</title>
+
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
     <!-- ==================== LANDING PAGE ==================== -->
+
     <div id="landingPage" class="page">
 
         <div class="landing-container">
@@ -36,13 +40,15 @@
 
 
     <!-- ==================== SIMULATION PAGE ==================== -->
+
     <div id="simulationPage" class="page hidden">
 
         <div class="sim-container">
 
-            <h1>Solar Tracking Simulation</h1>
+            <h1>Dual-Axis Solar Tracking</h1>
 
-            <!-- Canvas -->
+            <!-- Main Simulation -->
+
             <div class="canvas-wrapper">
 
                 <canvas
@@ -54,21 +60,14 @@
             </div>
 
 
-            <!-- Controls -->
+            <!-- Only Simulation Control -->
+
             <div class="control-bar">
 
                 <div class="controls">
 
-                    <button id="pauseBtn" class="btn-control">
-                        ⏸ Pause
-                    </button>
-
-                    <button id="restartBtn" class="btn-control">
-                        ↻ Restart
-                    </button>
-
-                    <button id="speedBtn" class="btn-speed">
-                        1×
+                    <button id="stopBtn" class="btn-control">
+                        ⏹ STOP SIMULATION
                     </button>
 
                 </div>
@@ -76,7 +75,8 @@
             </div>
 
 
-            <!-- Statistics -->
+            <!-- Live Statistics -->
+
             <div class="stats-panel">
 
                 <div class="stat-group">
@@ -87,7 +87,9 @@
                             Sun Angle
                         </div>
 
-                        <div id="sunAngle" class="stat-value">
+                        <div
+                            id="sunAngle"
+                            class="stat-value">
                             0°
                         </div>
 
@@ -100,7 +102,9 @@
                             Panel Angle
                         </div>
 
-                        <div id="panelAngle" class="stat-value">
+                        <div
+                            id="panelAngle"
+                            class="stat-value">
                             90°
                         </div>
 
@@ -113,7 +117,9 @@
                             Alignment
                         </div>
 
-                        <div id="alignment" class="stat-value">
+                        <div
+                            id="alignment"
+                            class="stat-value">
                             90°
                         </div>
 
@@ -123,11 +129,13 @@
                     <div class="stat-box highlight">
 
                         <div class="stat-label">
-                            Power Output
+                            Relative Output
                         </div>
 
-                        <div id="powerOutput" class="stat-value">
-                            0 W
+                        <div
+                            id="powerOutput"
+                            class="stat-value">
+                            120%
                         </div>
 
                     </div>
@@ -142,6 +150,7 @@
 
 
     <!-- ==================== RESULTS PAGE ==================== -->
+
     <div id="resultsPage" class="page hidden">
 
         <div class="results-container">
@@ -150,18 +159,21 @@
 
 
             <!-- Results Summary -->
+
             <div class="results-summary">
 
                 <div class="result-card">
 
-                    <h3>Tracking Panel</h3>
+                    <h3>Reference Output</h3>
 
-                    <div id="trackingAvg" class="result-value">
-                        0 W
+                    <div
+                        id="fixedAvg"
+                        class="result-value">
+                        0%
                     </div>
 
                     <p class="result-label">
-                        Average simulated output
+                        Normalized reference output
                     </p>
 
                 </div>
@@ -169,14 +181,16 @@
 
                 <div class="result-card">
 
-                    <h3>Fixed Panel</h3>
+                    <h3>Dual-Axis Tracking</h3>
 
-                    <div id="fixedAvg" class="result-value">
-                        0 W
+                    <div
+                        id="trackingAvg"
+                        class="result-value">
+                        0%
                     </div>
 
                     <p class="result-label">
-                        Average simulated output
+                        Simulated relative output
                     </p>
 
                 </div>
@@ -186,7 +200,9 @@
 
                     <h3>Improvement</h3>
 
-                    <div id="improvement" class="result-value">
+                    <div
+                        id="improvement"
+                        class="result-value">
                         +0%
                     </div>
 
@@ -200,12 +216,14 @@
 
 
             <!-- Graph -->
+
             <div class="graph-container">
 
-                <h2>Power Output Comparison</h2>
+                <h2>Relative Output Comparison</h2>
 
                 <p class="graph-subtitle">
-                    Conceptual comparison between tracking and fixed panels
+                    Conceptual comparison of reference output and
+                    dual-axis tracking performance
                 </p>
 
                 <canvas
@@ -218,26 +236,32 @@
 
 
             <!-- Conclusion -->
+
             <div class="conclusion">
 
                 <p>
+
                     <strong>Conclusion:</strong>
-                    Automatic solar tracking keeps the panel better aligned
-                    with incoming sunlight, resulting in higher simulated
-                    energy capture compared with a fixed panel.
+
+                    The dual-axis tracking system continuously adjusts
+                    the panel orientation toward the Sun, maintaining
+                    better sunlight alignment and increasing the
+                    simulated energy output compared with the reference
+                    configuration.
+
                 </p>
 
-            </div>
 
+                <p class="research-note">
 
-            <!-- Restart -->
-            <div class="results-actions">
+                    The simulated improvement is intentionally kept
+                    within an approximate 20–30% range as a conceptual
+                    representation of the trend observed in the
+                    reviewed literature. Actual performance varies
+                    with location, weather, system configuration and
+                    operating conditions.
 
-                <button
-                    id="restartFromResults"
-                    class="btn-control">
-                    ↻ Run Simulation Again
-                </button>
+                </p>
 
             </div>
 
@@ -247,7 +271,9 @@
 
 
     <!-- JavaScript -->
+
     <script src="script.js"></script>
 
 </body>
+
 </html>
