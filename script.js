@@ -47,9 +47,12 @@ class SolarTrackingSimulator {
 
         this.sunAngle = 0;
 
-        // Only the panel rotates.
-        // The pivot and support remain fixed.
-        this.panelAngle = -15;
+        /*
+         * Only the panel rotates.
+         * The pivot and support remain fixed.
+         */
+
+        this.panelAngle = -20;
 
 
         // ==================== DATA ====================
@@ -95,7 +98,7 @@ class SolarTrackingSimulator {
 
         this.sunAngle = 0;
 
-        this.panelAngle = -15;
+        this.panelAngle = -20;
 
 
         this.trackingData = [];
@@ -165,28 +168,108 @@ class SolarTrackingSimulator {
 
         // ==================== SUN MOVEMENT ====================
 
+        /*
+         * The Sun travels smoothly from
+         * left to right across the sky.
+         */
+
         this.sunAngle =
             progress * 180;
 
 
-        // ==================== PANEL TRACKING ====================
+        // ==================== FIXED PIVOT ====================
 
         /*
-         * Visual representation of the panel
-         * following the Sun.
-         *
-         * This is a conceptual simulation,
-         * not a geographic solar-position model.
+         * These coordinates are identical
+         * to the coordinates used during rendering.
          */
 
-        const targetPanelAngle =
-            -55 +
-            progress * 110;
+        const canvasWidth =
+            this.canvas.width;
+
+        const canvasHeight =
+            this.canvas.height;
 
 
-        // Smooth mechanical movement
+        const pivotX =
+            canvasWidth * 0.50;
 
-        const trackingSpeed = 0.055;
+        const pivotY =
+            canvasHeight * 0.67;
+
+
+        // ==================== SUN POSITION ====================
+
+        const sunX =
+            canvasWidth *
+            (
+                0.16 +
+                progress * 0.68
+            );
+
+
+        const sunY =
+            canvasHeight * 0.20 +
+            Math.sin(
+                progress * Math.PI
+            ) *
+            canvasHeight *
+            0.15;
+
+
+        // ==================== SUN-BASED PANEL TRACKING ====================
+
+        /*
+         * Vector from the fixed panel pivot
+         * toward the Sun.
+         */
+
+        const dx =
+            sunX - pivotX;
+
+        const dy =
+            sunY - pivotY;
+
+
+        /*
+         * Calculate the angle required for
+         * the panel surface to face the Sun.
+         *
+         * The panel's local normal points
+         * upward at 0 degrees.
+         */
+
+        let targetPanelAngle =
+            Math.atan2(
+                dx,
+                -dy
+            ) *
+            180 /
+            Math.PI;
+
+
+        /*
+         * Keep the visual rotation within
+         * a reasonable mechanical range.
+         */
+
+        targetPanelAngle =
+            Math.max(
+                -65,
+                Math.min(
+                    65,
+                    targetPanelAngle
+                )
+            );
+
+
+        // ==================== SMOOTH TRACKING ====================
+
+        /*
+         * Lower value = slower, smoother movement.
+         */
+
+        const trackingSpeed = 0.035;
 
 
         this.panelAngle +=
@@ -224,10 +307,10 @@ class SolarTrackingSimulator {
         // ==================== REFERENCE OUTPUT ====================
 
         /*
-         * Normalized output.
+         * Normalized conceptual output.
          *
-         * We deliberately do NOT use
-         * unrealistic values such as 1000 W.
+         * This deliberately avoids unrealistic
+         * 1000 W / 1300 W values.
          */
 
         const referenceOutput =
@@ -241,7 +324,8 @@ class SolarTrackingSimulator {
         // ==================== DUAL-AXIS OUTPUT ====================
 
         /*
-         * Approximate 20–30% improvement.
+         * Expected improvement remains
+         * approximately 20–30%.
          */
 
         const improvementFactor =
@@ -257,7 +341,7 @@ class SolarTrackingSimulator {
             improvementFactor;
 
 
-        // ==================== SAVE DATA ====================
+        // ==================== STORE DATA ====================
 
         this.referenceData.push({
 
@@ -277,7 +361,7 @@ class SolarTrackingSimulator {
         });
 
 
-        // ==================== UPDATE UI ====================
+        // ==================== UPDATE STATISTICS ====================
 
         document.getElementById(
             "sunAngle"
@@ -328,16 +412,22 @@ class SolarTrackingSimulator {
             );
 
 
-        progressBar.style.width =
-            (
-                progress * 100
-            ) + "%";
+        if (progressBar) {
+
+            progressBar.style.width =
+                (
+                    progress * 100
+                ) + "%";
+        }
 
 
-        progressText.textContent =
-            Math.round(
-                progress * 100
-            ) + "%";
+        if (progressText) {
+
+            progressText.textContent =
+                Math.round(
+                    progress * 100
+                ) + "%";
+        }
     }
 
 
@@ -406,8 +496,7 @@ class SolarTrackingSimulator {
 
 
         const sunY =
-            h *
-            0.20 +
+            h * 0.20 +
             Math.sin(
                 progress * Math.PI
             ) *
@@ -424,12 +513,7 @@ class SolarTrackingSimulator {
         // ==================== FIXED PIVOT ====================
 
         /*
-         * IMPORTANT:
-         *
-         * This coordinate NEVER changes.
-         *
-         * It represents the fixed mechanical
-         * pivot of the solar tracker.
+         * The pivot NEVER moves.
          */
 
         const pivotX =
@@ -486,7 +570,7 @@ class SolarTrackingSimulator {
             this.ctx;
 
 
-        // Sun glow
+        // ==================== GLOW ====================
 
         const glow =
             ctx.createRadialGradient(
@@ -495,7 +579,7 @@ class SolarTrackingSimulator {
                 0,
                 x,
                 y,
-                100
+                105
             );
 
 
@@ -516,14 +600,14 @@ class SolarTrackingSimulator {
 
 
         ctx.fillRect(
-            x - 100,
-            y - 100,
-            200,
-            200
+            x - 105,
+            y - 105,
+            210,
+            210
         );
 
 
-        // Sun
+        // ==================== SUN BODY ====================
 
         ctx.fillStyle =
             "#FFD43B";
@@ -567,10 +651,10 @@ class SolarTrackingSimulator {
 
 
         /*
-         * NO rotation is applied here.
+         * IMPORTANT:
          *
-         * Therefore the support and axis
-         * remain perfectly stationary.
+         * No rotation is applied to the
+         * support or its base.
          */
 
         ctx.strokeStyle =
@@ -581,7 +665,7 @@ class SolarTrackingSimulator {
         ctx.lineCap = "round";
 
 
-        // Vertical support
+        // Vertical fixed axis
 
         ctx.beginPath();
 
@@ -631,16 +715,19 @@ class SolarTrackingSimulator {
             this.ctx;
 
 
-        const panelWidth = 270;
+        /*
+         * Wider solar panel.
+         */
 
-        const panelHeight = 150;
+        const panelWidth = 340;
+
+        const panelHeight = 165;
 
 
         /*
-         * ONLY the panel is rotated.
+         * Only the panel assembly is rotated.
          *
-         * The support is NOT inside this
-         * rotated drawing context.
+         * The support remains completely fixed.
          */
 
         ctx.save();
@@ -659,15 +746,40 @@ class SolarTrackingSimulator {
         );
 
 
+        // ==================== MOUNTING ARM ====================
+
+        ctx.strokeStyle =
+            "#34495e";
+
+        ctx.lineWidth = 12;
+
+        ctx.lineCap = "round";
+
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            0,
+            0
+        );
+
+        ctx.lineTo(
+            0,
+            -panelHeight / 2
+        );
+
+        ctx.stroke();
+
+
         // ==================== PANEL BODY ====================
 
         ctx.fillStyle =
-            "#2f76b5";
+            "#286da8";
 
 
         ctx.fillRect(
             -panelWidth / 2,
-            -panelHeight,
+            -panelHeight / 2,
             panelWidth,
             panelHeight
         );
@@ -683,32 +795,36 @@ class SolarTrackingSimulator {
 
         ctx.strokeRect(
             -panelWidth / 2,
-            -panelHeight,
+            -panelHeight / 2,
             panelWidth,
             panelHeight
         );
 
 
-        // ==================== SOLAR CELL GRID ====================
+        // ==================== SOLAR CELLS ====================
 
         ctx.strokeStyle =
-            "rgba(255,255,255,0.42)";
+            "rgba(255,255,255,0.38)";
 
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 1.2;
 
 
-        // Vertical cell lines
+        // Vertical cell divisions
+
+        const columns = 6;
+
 
         for (
             let i = 1;
-            i < 6;
+            i < columns;
             i++
         ) {
 
             const cellX =
                 -panelWidth / 2 +
                 (
-                    panelWidth / 6
+                    panelWidth /
+                    columns
                 ) * i;
 
 
@@ -717,13 +833,13 @@ class SolarTrackingSimulator {
 
             ctx.moveTo(
                 cellX,
-                -panelHeight
+                -panelHeight / 2
             );
 
 
             ctx.lineTo(
                 cellX,
-                0
+                panelHeight / 2
             );
 
 
@@ -731,18 +847,22 @@ class SolarTrackingSimulator {
         }
 
 
-        // Horizontal cell lines
+        // Horizontal cell divisions
+
+        const rows = 3;
+
 
         for (
             let i = 1;
-            i < 3;
+            i < rows;
             i++
         ) {
 
             const cellY =
-                -panelHeight +
+                -panelHeight / 2 +
                 (
-                    panelHeight / 3
+                    panelHeight /
+                    rows
                 ) * i;
 
 
@@ -781,10 +901,7 @@ class SolarTrackingSimulator {
 
 
         /*
-         * Mechanical rotation point.
-         *
-         * This remains fixed while the
-         * panel rotates around it.
+         * Fixed mechanical rotation point.
          */
 
         ctx.fillStyle =
@@ -839,7 +956,114 @@ class SolarTrackingSimulator {
             this.ctx;
 
 
-        const rayCount = 5;
+        /*
+         * Direction from Sun to panel.
+         */
+
+        const dx =
+            pivotX - sunX;
+
+        const dy =
+            pivotY - sunY;
+
+
+        const distance =
+            Math.sqrt(
+                dx * dx +
+                dy * dy
+            );
+
+
+        // ==================== PERPENDICULAR ====================
+
+        const px =
+            -dy / distance;
+
+        const py =
+            dx / distance;
+
+
+        // ==================== SOFT LIGHT BEAM ====================
+
+        /*
+         * Wide transparent beam gives the
+         * impression of sunlight rather than
+         * thin laser-like lines.
+         */
+
+        const beamWidth = 75;
+
+
+        const gradient =
+            ctx.createLinearGradient(
+                sunX,
+                sunY,
+                pivotX,
+                pivotY
+            );
+
+
+        gradient.addColorStop(
+            0,
+            "rgba(255,204,40,0.20)"
+        );
+
+
+        gradient.addColorStop(
+            0.6,
+            "rgba(255,204,40,0.10)"
+        );
+
+
+        gradient.addColorStop(
+            1,
+            "rgba(255,204,40,0.02)"
+        );
+
+
+        ctx.fillStyle =
+            gradient;
+
+
+        ctx.beginPath();
+
+
+        ctx.moveTo(
+            sunX + px * 8,
+            sunY + py * 8
+        );
+
+
+        ctx.lineTo(
+            sunX - px * 8,
+            sunY - py * 8
+        );
+
+
+        ctx.lineTo(
+            pivotX -
+            px * beamWidth,
+            pivotY -
+            py * beamWidth
+        );
+
+
+        ctx.lineTo(
+            pivotX +
+            px * beamWidth,
+            pivotY +
+            py * beamWidth
+        );
+
+
+        ctx.closePath();
+
+        ctx.fill();
+
+
+        // ==================== LIGHT RAYS ====================
+
+        const rayCount = 7;
 
 
         for (
@@ -850,30 +1074,44 @@ class SolarTrackingSimulator {
 
             const offset =
                 (
-                    i - 2
-                ) * 20;
+                    i -
+                    (rayCount - 1) / 2
+                ) * 18;
 
 
             ctx.strokeStyle =
-                "rgba(255,184,0,0.55)";
+                "rgba(255,190,20,0.32)";
 
-            ctx.lineWidth = 3;
 
-            ctx.lineCap = "round";
+            ctx.lineWidth = 2;
+
+
+            ctx.lineCap =
+                "round";
 
 
             ctx.beginPath();
 
 
             ctx.moveTo(
-                sunX,
-                sunY
+                sunX +
+                px *
+                offset *
+                0.1,
+
+                sunY +
+                py *
+                offset *
+                0.1
             );
 
 
             ctx.lineTo(
-                pivotX + offset,
-                pivotY - 25
+                pivotX +
+                px * offset,
+
+                pivotY +
+                py * offset
             );
 
 
@@ -975,6 +1213,7 @@ class SolarTrackingSimulator {
                 "comparisonGraph"
             );
 
+
         const ctx =
             canvas.getContext("2d");
 
@@ -1053,15 +1292,18 @@ class SolarTrackingSimulator {
 
             ctx.beginPath();
 
+
             ctx.moveTo(
                 left,
                 y
             );
 
+
             ctx.lineTo(
                 w - right,
                 y
             );
+
 
             ctx.stroke();
 
@@ -1069,8 +1311,10 @@ class SolarTrackingSimulator {
             ctx.fillStyle =
                 "#77838b";
 
+
             ctx.font =
                 "12px Arial";
+
 
             ctx.textAlign =
                 "right";
@@ -1088,7 +1332,7 @@ class SolarTrackingSimulator {
         }
 
 
-        // ==================== GRAPH LINES ====================
+        // ==================== TRACKING LINE ====================
 
         this.drawGraphLine(
             ctx,
@@ -1101,6 +1345,8 @@ class SolarTrackingSimulator {
             graphHeight
         );
 
+
+        // ==================== REFERENCE LINE ====================
 
         this.drawGraphLine(
             ctx,
@@ -1131,7 +1377,9 @@ class SolarTrackingSimulator {
         ctx.strokeStyle =
             color;
 
+
         ctx.lineWidth = 4;
+
 
         ctx.lineJoin =
             "round";
