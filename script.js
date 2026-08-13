@@ -4,53 +4,52 @@ class SolarTrackingSimulator {
 
     constructor() {
 
-        // ==================== PAGES ====================
+        // ==================== ELEMENTS ====================
 
         this.landingPage =
-            document.getElementById('landingPage');
+            document.getElementById("landingPage");
 
         this.simulationPage =
-            document.getElementById('simulationPage');
+            document.getElementById("simulationPage");
 
         this.resultsPage =
-            document.getElementById('resultsPage');
-
-
-        // ==================== BUTTONS ====================
+            document.getElementById("resultsPage");
 
         this.startBtn =
-            document.getElementById('startBtn');
+            document.getElementById("startBtn");
 
         this.stopBtn =
-            document.getElementById('stopBtn');
+            document.getElementById("stopBtn");
 
-
-        // ==================== CANVAS ====================
+        this.restartBtn =
+            document.getElementById("restartFromResults");
 
         this.canvas =
-            document.getElementById('simulationCanvas');
-
-        if (!this.canvas) {
-
-            console.error(
-                'simulationCanvas was not found.'
-            );
-
-            return;
-        }
+            document.getElementById("simulationCanvas");
 
         this.ctx =
-            this.canvas.getContext('2d');
+            this.canvas.getContext("2d");
 
 
-        // ==================== SIMULATION STATE ====================
+        // ==================== STATE ====================
 
         this.isRunning = false;
 
         this.simulationTime = 0;
 
-        // Slower simulation
+        // 40-second simulation
         this.simulationDuration = 40;
+
+        this.lastTime = performance.now();
+
+
+        // ==================== PANEL ====================
+
+        this.sunAngle = 0;
+
+        // Only the panel rotates.
+        // The pivot and support remain fixed.
+        this.panelAngle = -15;
 
 
         // ==================== DATA ====================
@@ -60,47 +59,21 @@ class SolarTrackingSimulator {
         this.referenceData = [];
 
 
-        // ==================== CURRENT VALUES ====================
+        // ==================== EVENTS ====================
 
-        this.currentSunAngle = 0;
+        this.startBtn.addEventListener(
+            "click",
+            () => this.startSimulation()
+        );
 
-        this.currentTrackingAngle = 90;
+        this.stopBtn.addEventListener(
+            "click",
+            () => this.stopSimulation()
+        );
 
-        this.currentAlignment = 90;
-
-        this.currentTrackingPower = 0;
-
-        this.currentReferencePower = 0;
-
-
-        // ==================== BUTTON EVENTS ====================
-
-        if (this.startBtn) {
-
-            this.startBtn.addEventListener(
-                'click',
-                () => this.startSimulation()
-            );
-
-        }
-
-
-        if (this.stopBtn) {
-
-            this.stopBtn.addEventListener(
-                'click',
-                () => this.stopSimulation()
-            );
-
-        }
-
-
-        this.lastTime =
-            performance.now();
-
-
-        console.log(
-            'Solar Tracking Simulator initialized.'
+        this.restartBtn.addEventListener(
+            "click",
+            () => this.startSimulation()
         );
     }
 
@@ -109,50 +82,28 @@ class SolarTrackingSimulator {
 
     startSimulation() {
 
-        console.log(
-            'Starting solar simulation...'
-        );
+        this.landingPage.classList.add("hidden");
 
+        this.resultsPage.classList.add("hidden");
 
-        // Show simulation
+        this.simulationPage.classList.remove("hidden");
 
-        this.landingPage.classList.add(
-            'hidden'
-        );
-
-        this.resultsPage.classList.add(
-            'hidden'
-        );
-
-        this.simulationPage.classList.remove(
-            'hidden'
-        );
-
-
-        // Reset values
 
         this.isRunning = true;
 
         this.simulationTime = 0;
+
+        this.sunAngle = 0;
+
+        this.panelAngle = -15;
+
 
         this.trackingData = [];
 
         this.referenceData = [];
 
 
-        this.currentSunAngle = 0;
-
-        this.currentTrackingAngle = 90;
-
-        this.currentAlignment = 90;
-
-        this.currentTrackingPower = 0;
-
-        this.currentReferencePower = 0;
-
-
-        this.lastTime =
-            performance.now();
+        this.lastTime = performance.now();
 
 
         this.animate();
@@ -163,25 +114,14 @@ class SolarTrackingSimulator {
 
     stopSimulation() {
 
-        console.log(
-            'Simulation stopped.'
-        );
-
-
         this.isRunning = false;
 
 
-        this.simulationPage.classList.add(
-            'hidden'
-        );
+        this.simulationPage.classList.add("hidden");
 
-        this.resultsPage.classList.add(
-            'hidden'
-        );
+        this.resultsPage.classList.add("hidden");
 
-        this.landingPage.classList.remove(
-            'hidden'
-        );
+        this.landingPage.classList.remove("hidden");
     }
 
 
@@ -189,13 +129,16 @@ class SolarTrackingSimulator {
 
     update(deltaTime) {
 
-        // Advance simulation slowly
+        if (!this.isRunning) {
+            return;
+        }
+
 
         this.simulationTime +=
             deltaTime / 1000;
 
 
-        // Simulation complete
+        // ==================== END ====================
 
         if (
             this.simulationTime >=
@@ -213,99 +156,78 @@ class SolarTrackingSimulator {
         }
 
 
-        // ==================== SIMULATION PROGRESS ====================
+        // ==================== PROGRESS ====================
 
         const progress =
             this.simulationTime /
             this.simulationDuration;
 
 
-        // ==================== SUN POSITION ====================
+        // ==================== SUN MOVEMENT ====================
 
-        /*
-         * Sun travels from one side of the
-         * simulation to the other.
-         */
-
-        const sunAngle =
+        this.sunAngle =
             progress * 180;
 
 
-        // ==================== TARGET PANEL ANGLE ====================
+        // ==================== PANEL TRACKING ====================
 
         /*
-         * The panel orientation follows
-         * the changing Sun position.
+         * Visual representation of the panel
+         * following the Sun.
+         *
+         * This is a conceptual simulation,
+         * not a geographic solar-position model.
          */
 
         const targetPanelAngle =
-            sunAngle + 90;
+            -55 +
+            progress * 110;
 
 
-        // ==================== SMOOTH TRACKING ====================
+        // Smooth mechanical movement
 
-        /*
-         * The panel does not instantly jump.
-         * It gradually rotates toward the
-         * required tracking position.
-         */
-
-        const rotationSpeed = 0.08;
+        const trackingSpeed = 0.055;
 
 
-        this.currentTrackingAngle +=
+        this.panelAngle +=
             (
                 targetPanelAngle -
-                this.currentTrackingAngle
+                this.panelAngle
             ) *
-            rotationSpeed;
+            trackingSpeed;
 
 
         // ==================== ALIGNMENT ====================
 
-        const angleDifference =
+        const trackingError =
             Math.abs(
                 targetPanelAngle -
-                this.currentTrackingAngle
+                this.panelAngle
             );
 
 
-        /*
-         * Convert the tracking difference
-         * into an approximate alignment value.
-         */
+        let alignment =
+            90 -
+            trackingError;
 
-        this.currentAlignment =
+
+        alignment =
             Math.max(
                 0,
-                90 - angleDifference
+                Math.min(
+                    90,
+                    alignment
+                )
             );
-
-
-        /*
-         * The conceptual tracker is intended
-         * to maintain approximately 90°
-         * alignment with sunlight.
-         */
-
-        if (
-            this.currentAlignment > 88
-        ) {
-
-            this.currentAlignment = 90;
-
-        }
 
 
         // ==================== REFERENCE OUTPUT ====================
 
         /*
-         * We use a normalized reference output
-         * instead of pretending that the panel
-         * has a specific physical wattage.
+         * Normalized output.
          *
-         * The output varies naturally during
-         * the simulated day.
+         * We deliberately do NOT use
+         * unrealistic values such as 1000 W.
          */
 
         const referenceOutput =
@@ -316,13 +238,10 @@ class SolarTrackingSimulator {
             );
 
 
-        // ==================== DUAL-AXIS ADVANTAGE ====================
+        // ==================== DUAL-AXIS OUTPUT ====================
 
         /*
-         * Conceptual improvement:
-         *
-         * approximately 20–30% higher than
-         * the reference output.
+         * Approximate 20–30% improvement.
          */
 
         const improvementFactor =
@@ -338,16 +257,7 @@ class SolarTrackingSimulator {
             improvementFactor;
 
 
-        // ==================== STORE DATA ====================
-
-        this.trackingData.push({
-
-            time: progress,
-
-            power: trackingOutput
-
-        });
-
+        // ==================== SAVE DATA ====================
 
         this.referenceData.push({
 
@@ -358,92 +268,85 @@ class SolarTrackingSimulator {
         });
 
 
-        // ==================== CURRENT VALUES ====================
+        this.trackingData.push({
 
-        this.currentSunAngle =
-            sunAngle;
+            time: progress,
 
-        this.currentTrackingPower =
-            trackingOutput;
+            power: trackingOutput
 
-        this.currentReferencePower =
-            referenceOutput;
+        });
 
 
         // ==================== UPDATE UI ====================
 
-        const sunAngleElement =
-            document.getElementById(
-                'sunAngle'
-            );
-
-        const panelAngleElement =
-            document.getElementById(
-                'panelAngle'
-            );
-
-        const alignmentElement =
-            document.getElementById(
-                'alignment'
-            );
-
-        const powerOutputElement =
-            document.getElementById(
-                'powerOutput'
-            );
+        document.getElementById(
+            "sunAngle"
+        ).textContent =
+            Math.round(
+                this.sunAngle
+            ) + "°";
 
 
-        if (sunAngleElement) {
-
-            sunAngleElement.textContent =
-                Math.round(
-                    sunAngle
-                ) + '°';
-
-        }
+        document.getElementById(
+            "panelAngle"
+        ).textContent =
+            Math.round(
+                this.panelAngle
+            ) + "°";
 
 
-        if (panelAngleElement) {
-
-            panelAngleElement.textContent =
-                Math.round(
-                    this.currentTrackingAngle
-                ) + '°';
-
-        }
-
-
-        if (alignmentElement) {
-
-            alignmentElement.textContent =
-                Math.round(
-                    this.currentAlignment
-                ) + '°';
-
-        }
+        document.getElementById(
+            "alignment"
+        ).textContent =
+            "≈ " +
+            Math.round(
+                alignment
+            ) + "°";
 
 
-        if (powerOutputElement) {
-
-            const relativeOutput =
+        document.getElementById(
+            "powerOutput"
+        ).textContent =
+            Math.round(
                 (
                     trackingOutput /
                     referenceOutput
-                ) * 100;
+                ) * 100
+            ) + "%";
 
 
-            powerOutputElement.textContent =
-                Math.round(
-                    relativeOutput
-                ) + '%';
+        // ==================== PROGRESS BAR ====================
 
-        }
+        const progressBar =
+            document.getElementById(
+                "progressBar"
+            );
+
+        const progressText =
+            document.getElementById(
+                "progressText"
+            );
+
+
+        progressBar.style.width =
+            (
+                progress * 100
+            ) + "%";
+
+
+        progressText.textContent =
+            Math.round(
+                progress * 100
+            ) + "%";
     }
 
 
     // ==================== RENDER ====================
 
     render() {
+
+        const ctx =
+            this.ctx;
 
         const w =
             this.canvas.width;
@@ -452,19 +355,10 @@ class SolarTrackingSimulator {
             this.canvas.height;
 
 
-        // ==================== SIMPLE SKY ====================
+        // ==================== SKY ====================
 
-        /*
-         * No ground.
-         * No buildings.
-         * No landscape.
-         *
-         * The environment stays visually
-         * simple so the panel remains the focus.
-         */
-
-        const gradient =
-            this.ctx.createLinearGradient(
+        const sky =
+            ctx.createLinearGradient(
                 0,
                 0,
                 0,
@@ -472,23 +366,23 @@ class SolarTrackingSimulator {
             );
 
 
-        gradient.addColorStop(
+        sky.addColorStop(
             0,
-            '#BFE7F7'
+            "#b9e5f5"
         );
 
 
-        gradient.addColorStop(
+        sky.addColorStop(
             1,
-            '#F4FBFE'
+            "#f5fbfe"
         );
 
 
-        this.ctx.fillStyle =
-            gradient;
+        ctx.fillStyle =
+            sky;
 
 
-        this.ctx.fillRect(
+        ctx.fillRect(
             0,
             0,
             w,
@@ -496,194 +390,284 @@ class SolarTrackingSimulator {
         );
 
 
-        // ==================== SUN POSITION ====================
+        // ==================== SUN ====================
 
-        const sunProgress =
-            this.currentSunAngle /
+        const progress =
+            this.sunAngle /
             180;
 
 
         const sunX =
             w *
             (
-                0.15 +
-                sunProgress * 0.70
+                0.16 +
+                progress * 0.68
             );
 
 
         const sunY =
-            h * 0.22 +
+            h *
+            0.20 +
             Math.sin(
-                sunProgress * Math.PI
+                progress * Math.PI
             ) *
             h *
-            0.20;
+            0.15;
 
 
-        // ==================== SUN GLOW ====================
+        this.drawSun(
+            sunX,
+            sunY
+        );
 
-        const sunGlow =
-            this.ctx.createRadialGradient(
-                sunX,
-                sunY,
+
+        // ==================== FIXED PIVOT ====================
+
+        /*
+         * IMPORTANT:
+         *
+         * This coordinate NEVER changes.
+         *
+         * It represents the fixed mechanical
+         * pivot of the solar tracker.
+         */
+
+        const pivotX =
+            w * 0.50;
+
+        const pivotY =
+            h * 0.67;
+
+
+        // ==================== SUNLIGHT ====================
+
+        this.drawSunRays(
+            sunX,
+            sunY,
+            pivotX,
+            pivotY
+        );
+
+
+        // ==================== FIXED SUPPORT ====================
+
+        this.drawSupport(
+            pivotX,
+            pivotY
+        );
+
+
+        // ==================== ROTATING PANEL ====================
+
+        this.drawPanel(
+            pivotX,
+            pivotY,
+            this.panelAngle
+        );
+
+
+        // ==================== FIXED PIVOT ====================
+
+        this.drawPivot(
+            pivotX,
+            pivotY
+        );
+    }
+
+
+    // ==================== SUN ====================
+
+    drawSun(
+        x,
+        y
+    ) {
+
+        const ctx =
+            this.ctx;
+
+
+        // Sun glow
+
+        const glow =
+            ctx.createRadialGradient(
+                x,
+                y,
                 0,
-                sunX,
-                sunY,
-                90
+                x,
+                y,
+                100
             );
 
 
-        sunGlow.addColorStop(
+        glow.addColorStop(
             0,
-            'rgba(255,200,0,0.45)'
+            "rgba(255,210,40,0.45)"
         );
 
 
-        sunGlow.addColorStop(
+        glow.addColorStop(
             1,
-            'rgba(255,200,0,0)'
+            "rgba(255,210,40,0)"
         );
 
 
-        this.ctx.fillStyle =
-            sunGlow;
+        ctx.fillStyle =
+            glow;
 
 
-        this.ctx.fillRect(
-            sunX - 90,
-            sunY - 90,
-            180,
-            180
+        ctx.fillRect(
+            x - 100,
+            y - 100,
+            200,
+            200
         );
 
 
-        // ==================== SUN ====================
+        // Sun
 
-        this.ctx.fillStyle =
-            '#FFD700';
-
-
-        this.ctx.beginPath();
+        ctx.fillStyle =
+            "#FFD43B";
 
 
-        this.ctx.arc(
-            sunX,
-            sunY,
+        ctx.beginPath();
+
+
+        ctx.arc(
+            x,
+            y,
             40,
             0,
             Math.PI * 2
         );
 
 
-        this.ctx.fill();
+        ctx.fill();
 
 
-        this.ctx.strokeStyle =
-            '#FFA500';
+        ctx.strokeStyle =
+            "#F5A400";
 
 
-        this.ctx.lineWidth = 3;
+        ctx.lineWidth = 3;
 
 
-        this.ctx.stroke();
-
-
-        // ==================== PANEL POSITION ====================
-
-        /*
-         * Large central panel.
-         */
-
-        const panelX =
-            w * 0.50;
-
-        const panelY =
-            h * 0.67;
-
-
-        // ==================== SUNLIGHT ====================
-
-        this.drawSunrays(
-            sunX,
-            sunY,
-            panelX,
-            panelY
-        );
-
-
-        // ==================== TRACKING PANEL ====================
-
-        this.drawPanel(
-            panelX,
-            panelY,
-            this.currentTrackingAngle
-        );
-
-
-        // ==================== ALIGNMENT INDICATOR ====================
-
-        this.drawAlignmentIndicator(
-            panelX,
-            panelY
-        );
-
-
-        // ==================== PROGRESS BAR ====================
-
-        const progress =
-            this.simulationTime /
-            this.simulationDuration;
-
-
-        this.drawProgressBar(
-            progress
-        );
+        ctx.stroke();
     }
 
 
-    // ==================== DRAW PANEL ====================
+    // ==================== FIXED SUPPORT ====================
 
-    drawPanel(
+    drawSupport(
         x,
-        y,
-        angle
+        y
     ) {
 
+        const ctx =
+            this.ctx;
+
+
         /*
-         * Larger panel so the tracking
-         * movement is clearly visible.
+         * NO rotation is applied here.
+         *
+         * Therefore the support and axis
+         * remain perfectly stationary.
          */
 
-        const panelWidth = 240;
+        ctx.strokeStyle =
+            "#2f404d";
 
-        const panelHeight = 130;
+        ctx.lineWidth = 12;
+
+        ctx.lineCap = "round";
 
 
-        this.ctx.save();
+        // Vertical support
 
+        ctx.beginPath();
 
-        this.ctx.translate(
+        ctx.moveTo(
             x,
             y
         );
 
+        ctx.lineTo(
+            x,
+            y + 120
+        );
 
-        this.ctx.rotate(
+        ctx.stroke();
+
+
+        // Fixed base
+
+        ctx.lineWidth = 14;
+
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            x - 70,
+            y + 120
+        );
+
+        ctx.lineTo(
+            x + 70,
+            y + 120
+        );
+
+        ctx.stroke();
+    }
+
+
+    // ==================== ROTATING PANEL ====================
+
+    drawPanel(
+        pivotX,
+        pivotY,
+        angle
+    ) {
+
+        const ctx =
+            this.ctx;
+
+
+        const panelWidth = 270;
+
+        const panelHeight = 150;
+
+
+        /*
+         * ONLY the panel is rotated.
+         *
+         * The support is NOT inside this
+         * rotated drawing context.
+         */
+
+        ctx.save();
+
+
+        ctx.translate(
+            pivotX,
+            pivotY
+        );
+
+
+        ctx.rotate(
             angle *
             Math.PI /
             180
         );
 
 
-        // ==================== PANEL ====================
+        // ==================== PANEL BODY ====================
 
-        this.ctx.fillStyle =
-            '#397DB8';
+        ctx.fillStyle =
+            "#2f76b5";
 
 
-        this.ctx.fillRect(
+        ctx.fillRect(
             -panelWidth / 2,
-            -panelHeight / 2,
+            -panelHeight,
             panelWidth,
             panelHeight
         );
@@ -691,16 +675,15 @@ class SolarTrackingSimulator {
 
         // ==================== PANEL BORDER ====================
 
-        this.ctx.strokeStyle =
-            '#1F3A56';
+        ctx.strokeStyle =
+            "#173b5a";
+
+        ctx.lineWidth = 6;
 
 
-        this.ctx.lineWidth = 5;
-
-
-        this.ctx.strokeRect(
+        ctx.strokeRect(
             -panelWidth / 2,
-            -panelHeight / 2,
+            -panelHeight,
             panelWidth,
             panelHeight
         );
@@ -708,49 +691,47 @@ class SolarTrackingSimulator {
 
         // ==================== SOLAR CELL GRID ====================
 
-        this.ctx.strokeStyle =
-            'rgba(255,255,255,0.45)';
+        ctx.strokeStyle =
+            "rgba(255,255,255,0.42)";
+
+        ctx.lineWidth = 1;
 
 
-        this.ctx.lineWidth = 1;
-
-
-        // Vertical lines
+        // Vertical cell lines
 
         for (
             let i = 1;
-            i < 5;
+            i < 6;
             i++
         ) {
 
-            this.ctx.beginPath();
-
-
-            this.ctx.moveTo(
+            const cellX =
                 -panelWidth / 2 +
                 (
-                    panelWidth / 5
-                ) * i,
+                    panelWidth / 6
+                ) * i;
 
-                -panelHeight / 2
+
+            ctx.beginPath();
+
+
+            ctx.moveTo(
+                cellX,
+                -panelHeight
             );
 
 
-            this.ctx.lineTo(
-                -panelWidth / 2 +
-                (
-                    panelWidth / 5
-                ) * i,
-
-                panelHeight / 2
+            ctx.lineTo(
+                cellX,
+                0
             );
 
 
-            this.ctx.stroke();
+            ctx.stroke();
         }
 
 
-        // Horizontal lines
+        // Horizontal cell lines
 
         for (
             let i = 1;
@@ -758,119 +739,107 @@ class SolarTrackingSimulator {
             i++
         ) {
 
-            this.ctx.beginPath();
+            const cellY =
+                -panelHeight +
+                (
+                    panelHeight / 3
+                ) * i;
 
 
-            this.ctx.moveTo(
+            ctx.beginPath();
+
+
+            ctx.moveTo(
                 -panelWidth / 2,
-
-                -panelHeight / 2 +
-                (
-                    panelHeight / 3
-                ) * i
+                cellY
             );
 
 
-            this.ctx.lineTo(
+            ctx.lineTo(
                 panelWidth / 2,
-
-                -panelHeight / 2 +
-                (
-                    panelHeight / 3
-                ) * i
+                cellY
             );
 
 
-            this.ctx.stroke();
+            ctx.stroke();
         }
 
 
-        // ==================== SUPPORT ====================
-
-        this.ctx.strokeStyle =
-            '#263746';
+        ctx.restore();
+    }
 
 
-        this.ctx.lineWidth = 7;
+    // ==================== FIXED PIVOT ====================
+
+    drawPivot(
+        x,
+        y
+    ) {
+
+        const ctx =
+            this.ctx;
 
 
-        this.ctx.beginPath();
+        /*
+         * Mechanical rotation point.
+         *
+         * This remains fixed while the
+         * panel rotates around it.
+         */
+
+        ctx.fillStyle =
+            "#263746";
 
 
-        this.ctx.moveTo(
-            0,
-            panelHeight / 2
-        );
+        ctx.beginPath();
 
 
-        this.ctx.lineTo(
-            0,
-            panelHeight / 2 + 55
-        );
-
-
-        this.ctx.stroke();
-
-
-        this.ctx.restore();
-
-
-        // ==================== PANEL LABEL ====================
-
-        this.ctx.fillStyle =
-            '#243746';
-
-
-        this.ctx.font =
-            'bold 20px Arial';
-
-
-        this.ctx.textAlign =
-            'center';
-
-
-        this.ctx.fillText(
-            'DUAL-AXIS TRACKING',
+        ctx.arc(
             x,
-            y + 100
+            y,
+            15,
+            0,
+            Math.PI * 2
         );
 
 
-        // ==================== OUTPUT ====================
-
-        this.ctx.font =
-            'bold 15px Arial';
+        ctx.fill();
 
 
-        this.ctx.fillStyle =
-            '#516572';
+        ctx.fillStyle =
+            "#9aa8b1";
 
 
-        this.ctx.fillText(
-            Math.round(
-                (
-                    this.currentTrackingPower /
-                    this.currentReferencePower
-                ) * 100
-            ) +
-            '% relative output',
+        ctx.beginPath();
 
+
+        ctx.arc(
             x,
-            y + 125
+            y,
+            6,
+            0,
+            Math.PI * 2
         );
+
+
+        ctx.fill();
     }
 
 
     // ==================== SUN RAYS ====================
 
-    drawSunrays(
+    drawSunRays(
         sunX,
         sunY,
-        targetX,
-        targetY
+        pivotX,
+        pivotY
     ) {
 
-        const rayCount = 7;
+        const ctx =
+            this.ctx;
+
+
+        const rayCount = 5;
 
 
         for (
@@ -881,192 +850,35 @@ class SolarTrackingSimulator {
 
             const offset =
                 (
-                    i -
-                    3
-                ) * 18;
+                    i - 2
+                ) * 20;
 
 
-            const endX =
-                targetX +
-                offset;
+            ctx.strokeStyle =
+                "rgba(255,184,0,0.55)";
+
+            ctx.lineWidth = 3;
+
+            ctx.lineCap = "round";
 
 
-            const endY =
-                targetY;
+            ctx.beginPath();
 
 
-            this.ctx.strokeStyle =
-                'rgba(255,190,0,0.60)';
-
-
-            this.ctx.lineWidth = 3;
-
-
-            this.ctx.beginPath();
-
-
-            this.ctx.moveTo(
+            ctx.moveTo(
                 sunX,
                 sunY
             );
 
 
-            this.ctx.lineTo(
-                endX,
-                endY
+            ctx.lineTo(
+                pivotX + offset,
+                pivotY - 25
             );
 
 
-            this.ctx.stroke();
+            ctx.stroke();
         }
-    }
-
-
-    // ==================== ALIGNMENT INDICATOR ====================
-
-    drawAlignmentIndicator(
-        x,
-        y
-    ) {
-
-        this.ctx.fillStyle =
-            'rgba(255,255,255,0.92)';
-
-
-        this.ctx.fillRect(
-            x - 100,
-            y - 195,
-            200,
-            55
-        );
-
-
-        this.ctx.strokeStyle =
-            '#D8E5EC';
-
-
-        this.ctx.lineWidth = 1;
-
-
-        this.ctx.strokeRect(
-            x - 100,
-            y - 195,
-            200,
-            55
-        );
-
-
-        this.ctx.fillStyle =
-            '#2C3E50';
-
-
-        this.ctx.font =
-            'bold 15px Arial';
-
-
-        this.ctx.textAlign =
-            'center';
-
-
-        this.ctx.fillText(
-            'Sunlight Alignment',
-            x,
-            y - 169
-        );
-
-
-        this.ctx.fillStyle =
-            '#27AE60';
-
-
-        this.ctx.font =
-            'bold 20px Arial';
-
-
-        this.ctx.fillText(
-            '≈ 90°',
-            x,
-            y - 146
-        );
-    }
-
-
-    // ==================== PROGRESS BAR ====================
-
-    drawProgressBar(
-        progress
-    ) {
-
-        const barX = 40;
-
-        const barY =
-            this.canvas.height - 30;
-
-        const barWidth =
-            this.canvas.width - 80;
-
-        const barHeight = 8;
-
-
-        this.ctx.fillStyle =
-            'rgba(255,255,255,0.70)';
-
-
-        this.ctx.fillRect(
-            barX,
-            barY,
-            barWidth,
-            barHeight
-        );
-
-
-        this.ctx.fillStyle =
-            '#FFA500';
-
-
-        this.ctx.fillRect(
-            barX,
-            barY,
-            barWidth * progress,
-            barHeight
-        );
-
-
-        this.ctx.strokeStyle =
-            'rgba(50,50,50,0.25)';
-
-
-        this.ctx.lineWidth = 1;
-
-
-        this.ctx.strokeRect(
-            barX,
-            barY,
-            barWidth,
-            barHeight
-        );
-
-
-        this.ctx.fillStyle =
-            '#516572';
-
-
-        this.ctx.font =
-            '12px Arial';
-
-
-        this.ctx.textAlign =
-            'right';
-
-
-        this.ctx.fillText(
-            Math.round(
-                progress * 100
-            ) + '%',
-
-            barX + barWidth,
-            barY - 6
-        );
     }
 
 
@@ -1075,11 +887,11 @@ class SolarTrackingSimulator {
     showResults() {
 
         this.simulationPage.classList.add(
-            'hidden'
+            "hidden"
         );
 
         this.resultsPage.classList.remove(
-            'hidden'
+            "hidden"
         );
 
 
@@ -1087,29 +899,17 @@ class SolarTrackingSimulator {
     }
 
 
-    // ==================== DISPLAY RESULTS ====================
+    // ==================== RESULTS DATA ====================
 
     displayResults() {
-
-        if (
-            this.trackingData.length === 0 ||
-            this.referenceData.length === 0
-        ) {
-
-            return;
-        }
-
-
-        // ==================== AVERAGES ====================
 
         const trackingAverage =
             this.trackingData.reduce(
                 (
-                    sum,
-                    data
+                    total,
+                    item
                 ) =>
-                    sum + data.power,
-
+                    total + item.power,
                 0
             ) /
             this.trackingData.length;
@@ -1118,17 +918,14 @@ class SolarTrackingSimulator {
         const referenceAverage =
             this.referenceData.reduce(
                 (
-                    sum,
-                    data
+                    total,
+                    item
                 ) =>
-                    sum + data.power,
-
+                    total + item.power,
                 0
             ) /
             this.referenceData.length;
 
-
-        // ==================== IMPROVEMENT ====================
 
         const improvement =
             (
@@ -1140,58 +937,46 @@ class SolarTrackingSimulator {
             ) * 100;
 
 
-        // ==================== UPDATE RESULTS ====================
-
         document.getElementById(
-            'trackingAvg'
+            "trackingAvg"
         ).textContent =
             Math.round(
                 trackingAverage
-            ) + '%';
+            ) + "%";
 
 
         document.getElementById(
-            'fixedAvg'
+            "fixedAvg"
         ).textContent =
             Math.round(
                 referenceAverage
-            ) + '%';
+            ) + "%";
 
 
         document.getElementById(
-            'improvement'
+            "improvement"
         ).textContent =
-            '+' +
+            "+" +
             Math.round(
                 improvement
-            ) +
-            '%';
+            ) + "%";
 
 
-        // ==================== GRAPH ====================
-
-        this.drawComparisonGraph();
+        this.drawGraph();
     }
 
 
-    // ==================== COMPARISON GRAPH ====================
+    // ==================== GRAPH ====================
 
-    drawComparisonGraph() {
+    drawGraph() {
 
         const canvas =
             document.getElementById(
-                'comparisonGraph'
+                "comparisonGraph"
             );
 
-
-        if (!canvas) {
-
-            return;
-        }
-
-
         const ctx =
-            canvas.getContext('2d');
+            canvas.getContext("2d");
 
 
         const w =
@@ -1201,13 +986,7 @@ class SolarTrackingSimulator {
             canvas.height;
 
 
-        // ==================== CLEAR ====================
-
-        ctx.fillStyle =
-            '#FFFFFF';
-
-
-        ctx.fillRect(
+        ctx.clearRect(
             0,
             0,
             w,
@@ -1215,71 +994,43 @@ class SolarTrackingSimulator {
         );
 
 
-        const padding = 60;
+        const left = 70;
+
+        const right = 35;
+
+        const top = 30;
+
+        const bottom = 50;
 
 
         const graphWidth =
             w -
-            padding * 2;
+            left -
+            right;
 
 
         const graphHeight =
             h -
-            padding * 2;
+            top -
+            bottom;
 
 
-        // ==================== MAX VALUE ====================
-
-        const maxPower =
+        const maxValue =
             Math.max(
                 ...this.trackingData.map(
-                    data => data.power
+                    item => item.power
                 ),
 
                 ...this.referenceData.map(
-                    data => data.power
-                ),
-
-                1
+                    item => item.power
+                )
             );
-
-
-        // ==================== AXES ====================
-
-        ctx.strokeStyle =
-            '#333';
-
-        ctx.lineWidth = 2;
-
-
-        ctx.beginPath();
-
-
-        ctx.moveTo(
-            padding,
-            h - padding
-        );
-
-
-        ctx.lineTo(
-            padding,
-            padding
-        );
-
-
-        ctx.lineTo(
-            w - padding,
-            padding
-        );
-
-
-        ctx.stroke();
 
 
         // ==================== GRID ====================
 
         ctx.strokeStyle =
-            '#EEEEEE';
+            "#e6ecef";
 
         ctx.lineWidth = 1;
 
@@ -1292,282 +1043,154 @@ class SolarTrackingSimulator {
 
             const y =
                 h -
-                padding -
+                bottom -
                 (
-                    graphHeight / 5
-                ) * i;
+                    graphHeight *
+                    i /
+                    5
+                );
 
 
             ctx.beginPath();
 
-
             ctx.moveTo(
-                padding,
+                left,
                 y
             );
-
 
             ctx.lineTo(
-                w - padding,
+                w - right,
                 y
             );
-
 
             ctx.stroke();
 
 
-            const value =
-                Math.round(
-                    (
-                        maxPower / 5
-                    ) * i
-                );
-
-
             ctx.fillStyle =
-                '#777';
-
+                "#77838b";
 
             ctx.font =
-                '12px Arial';
-
+                "12px Arial";
 
             ctx.textAlign =
-                'right';
+                "right";
 
 
             ctx.fillText(
-                value + '%',
-                padding - 10,
+                Math.round(
+                    maxValue *
+                    i /
+                    5
+                ) + "%",
+                left - 8,
                 y + 4
             );
         }
 
 
-        // ==================== AXIS LABEL ====================
+        // ==================== GRAPH LINES ====================
 
-        ctx.fillStyle =
-            '#666';
-
-
-        ctx.font =
-            '12px Arial';
-
-
-        ctx.textAlign =
-            'center';
-
-
-        ctx.fillText(
-            'Simulation Time',
-            w / 2,
-            h - 15
+        this.drawGraphLine(
+            ctx,
+            this.trackingData,
+            "#ff9f00",
+            maxValue,
+            left,
+            top,
+            graphWidth,
+            graphHeight
         );
 
 
-        // ==================== Y AXIS LABEL ====================
-
-        ctx.save();
-
-
-        ctx.translate(
-            15,
-            h / 2
-        );
-
-
-        ctx.rotate(
-            -Math.PI / 2
-        );
-
-
-        ctx.fillText(
-            'Relative Output',
-            0,
-            0
-        );
-
-
-        ctx.restore();
-
-
-        // ==================== DUAL-AXIS LINE ====================
-
-        ctx.strokeStyle =
-            '#FFA500';
-
-        ctx.lineWidth = 4;
-
-
-        ctx.beginPath();
-
-
-        this.trackingData.forEach(
-            (
-                data,
-                index
-            ) => {
-
-                const x =
-                    padding +
-                    data.time *
-                    graphWidth;
-
-
-                const y =
-                    h -
-                    padding -
-                    (
-                        data.power /
-                        maxPower
-                    ) *
-                    graphHeight;
-
-
-                if (index === 0) {
-
-                    ctx.moveTo(
-                        x,
-                        y
-                    );
-
-                } else {
-
-                    ctx.lineTo(
-                        x,
-                        y
-                    );
-
-                }
-            }
-        );
-
-
-        ctx.stroke();
-
-
-        // ==================== REFERENCE LINE ====================
-
-        ctx.strokeStyle =
-            '#888';
-
-        ctx.lineWidth = 4;
-
-
-        ctx.beginPath();
-
-
-        this.referenceData.forEach(
-            (
-                data,
-                index
-            ) => {
-
-                const x =
-                    padding +
-                    data.time *
-                    graphWidth;
-
-
-                const y =
-                    h -
-                    padding -
-                    (
-                        data.power /
-                        maxPower
-                    ) *
-                    graphHeight;
-
-
-                if (index === 0) {
-
-                    ctx.moveTo(
-                        x,
-                        y
-                    );
-
-                } else {
-
-                    ctx.lineTo(
-                        x,
-                        y
-                    );
-
-                }
-            }
-        );
-
-
-        ctx.stroke();
-
-
-        // ==================== LEGEND ====================
-
-        ctx.font =
-            'bold 12px Arial';
-
-
-        ctx.textAlign =
-            'left';
-
-
-        // Dual-axis
-
-        ctx.fillStyle =
-            '#FFA500';
-
-
-        ctx.fillRect(
-            w - 230,
-            padding + 10,
-            12,
-            12
-        );
-
-
-        ctx.fillStyle =
-            '#333';
-
-
-        ctx.fillText(
-            'Dual-Axis Tracking',
-            w - 210,
-            padding + 20
-        );
-
-
-        // Reference
-
-        ctx.fillStyle =
-            '#888';
-
-
-        ctx.fillRect(
-            w - 230,
-            padding + 32,
-            12,
-            12
-        );
-
-
-        ctx.fillStyle =
-            '#333';
-
-
-        ctx.fillText(
-            'Reference Output',
-            w - 210,
-            padding + 42
+        this.drawGraphLine(
+            ctx,
+            this.referenceData,
+            "#8b9399",
+            maxValue,
+            left,
+            top,
+            graphWidth,
+            graphHeight
         );
     }
 
 
-    // ==================== ANIMATION LOOP ====================
+    // ==================== GRAPH LINE ====================
+
+    drawGraphLine(
+        ctx,
+        data,
+        color,
+        maxValue,
+        left,
+        top,
+        width,
+        height
+    ) {
+
+        ctx.strokeStyle =
+            color;
+
+        ctx.lineWidth = 4;
+
+        ctx.lineJoin =
+            "round";
+
+
+        ctx.beginPath();
+
+
+        data.forEach(
+            (
+                item,
+                index
+            ) => {
+
+                const x =
+                    left +
+                    item.time *
+                    width;
+
+
+                const y =
+                    top +
+                    height -
+                    (
+                        item.power /
+                        maxValue
+                    ) *
+                    height;
+
+
+                if (
+                    index === 0
+                ) {
+
+                    ctx.moveTo(
+                        x,
+                        y
+                    );
+
+                } else {
+
+                    ctx.lineTo(
+                        x,
+                        y
+                    );
+                }
+            }
+        );
+
+
+        ctx.stroke();
+    }
+
+
+    // ==================== ANIMATION ====================
 
     animate() {
 
         if (!this.isRunning) {
-
             return;
         }
 
@@ -1598,7 +1221,6 @@ class SolarTrackingSimulator {
             requestAnimationFrame(
                 () => this.animate()
             );
-
         }
     }
 }
@@ -1607,13 +1229,8 @@ class SolarTrackingSimulator {
 // ==================== INITIALIZATION ====================
 
 document.addEventListener(
-    'DOMContentLoaded',
+    "DOMContentLoaded",
     () => {
-
-        console.log(
-            'Page loaded.'
-        );
-
 
         window.solarSimulator =
             new SolarTrackingSimulator();

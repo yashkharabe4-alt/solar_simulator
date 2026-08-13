@@ -14,131 +14,136 @@
 
     <!-- ==================== LANDING PAGE ==================== -->
 
-    <div id="landingPage" class="page">
+    <section id="landingPage" class="page">
 
         <div class="landing-container">
 
-            <div class="landing-content">
+            <div class="sun-icon">☀️</div>
 
-                <div class="sun-icon">☀️</div>
+            <h1>Solar Tracking Simulator</h1>
 
-                <h1>Solar Tracking Simulator</h1>
+            <p>
+                Interactive demonstration of automatic
+                dual-axis solar tracking
+            </p>
 
-                <p class="subtitle">
-                    Interactive demonstration of automatic solar panel tracking
-                </p>
-
-                <button id="startBtn" class="btn-start">
-                    ▶ START SIMULATION
-                </button>
-
-            </div>
+            <button id="startBtn" class="btn-start">
+                ▶ START SIMULATION
+            </button>
 
         </div>
 
-    </div>
+    </section>
 
 
     <!-- ==================== SIMULATION PAGE ==================== -->
 
-    <div id="simulationPage" class="page hidden">
+    <section id="simulationPage" class="page hidden">
 
         <div class="sim-container">
 
-            <h1>Dual-Axis Solar Tracking</h1>
+            <header class="simulation-header">
 
-            <!-- Main Simulation -->
+                <h1>Dual-Axis Solar Tracking</h1>
+
+                <p>
+                    The panel continuously adjusts its orientation
+                    to maintain optimal sunlight alignment.
+                </p>
+
+            </header>
+
+
+            <!-- ==================== SIMULATION ==================== -->
 
             <div class="canvas-wrapper">
 
                 <canvas
                     id="simulationCanvas"
-                    width="1200"
+                    width="1400"
                     height="600">
                 </canvas>
 
             </div>
 
 
-            <!-- Only Simulation Control -->
+            <!-- ==================== PROGRESS ==================== -->
 
-            <div class="control-bar">
+            <div class="progress-wrapper">
 
-                <div class="controls">
-
-                    <button id="stopBtn" class="btn-control">
-                        ⏹ STOP SIMULATION
-                    </button>
-
+                <div class="progress-track">
+                    <div
+                        id="progressBar"
+                        class="progress-fill">
+                    </div>
                 </div>
+
+                <span id="progressText">
+                    0%
+                </span>
 
             </div>
 
 
-            <!-- Live Statistics -->
+            <!-- ==================== CONTROL ==================== -->
+
+            <div class="control-bar">
+
+                <button
+                    id="stopBtn"
+                    class="btn-control">
+
+                    ⏹ STOP SIMULATION
+
+                </button>
+
+            </div>
+
+
+            <!-- ==================== LIVE STATISTICS ==================== -->
 
             <div class="stats-panel">
 
-                <div class="stat-group">
+                <div class="stat-box">
 
-                    <div class="stat-box">
+                    <span>Sun Angle</span>
 
-                        <div class="stat-label">
-                            Sun Angle
-                        </div>
+                    <strong id="sunAngle">
+                        0°
+                    </strong>
 
-                        <div
-                            id="sunAngle"
-                            class="stat-value">
-                            0°
-                        </div>
-
-                    </div>
+                </div>
 
 
-                    <div class="stat-box">
+                <div class="stat-box">
 
-                        <div class="stat-label">
-                            Panel Angle
-                        </div>
+                    <span>Panel Angle</span>
 
-                        <div
-                            id="panelAngle"
-                            class="stat-value">
-                            90°
-                        </div>
+                    <strong id="panelAngle">
+                        90°
+                    </strong>
 
-                    </div>
+                </div>
 
 
-                    <div class="stat-box">
+                <div class="stat-box">
 
-                        <div class="stat-label">
-                            Alignment
-                        </div>
+                    <span>Alignment</span>
 
-                        <div
-                            id="alignment"
-                            class="stat-value">
-                            90°
-                        </div>
+                    <strong id="alignment">
+                        ≈ 90°
+                    </strong>
 
-                    </div>
+                </div>
 
 
-                    <div class="stat-box highlight">
+                <div class="stat-box highlight">
 
-                        <div class="stat-label">
-                            Relative Output
-                        </div>
+                    <span>Relative Output</span>
 
-                        <div
-                            id="powerOutput"
-                            class="stat-value">
-                            120%
-                        </div>
-
-                    </div>
+                    <strong id="powerOutput">
+                        120%
+                    </strong>
 
                 </div>
 
@@ -146,131 +151,152 @@
 
         </div>
 
-    </div>
+    </section>
 
 
     <!-- ==================== RESULTS PAGE ==================== -->
 
-    <div id="resultsPage" class="page hidden">
+    <section id="resultsPage" class="page hidden">
 
         <div class="results-container">
 
             <h1>Simulation Results</h1>
 
+            <p class="results-subtitle">
+                Conceptual comparison of solar energy generation
+            </p>
 
-            <!-- Results Summary -->
+
+            <!-- ==================== RESULT CARDS ==================== -->
 
             <div class="results-summary">
 
                 <div class="result-card">
 
-                    <h3>Reference Output</h3>
+                    <span>
+                        Reference Output
+                    </span>
 
-                    <div
-                        id="fixedAvg"
-                        class="result-value">
+                    <strong id="fixedAvg">
                         0%
-                    </div>
+                    </strong>
 
-                    <p class="result-label">
-                        Normalized reference output
-                    </p>
+                    <small>
+                        Normalized reference
+                    </small>
 
                 </div>
 
 
-                <div class="result-card">
+                <div class="result-card tracking-card">
 
-                    <h3>Dual-Axis Tracking</h3>
+                    <span>
+                        Dual-Axis Output
+                    </span>
 
-                    <div
-                        id="trackingAvg"
-                        class="result-value">
+                    <strong id="trackingAvg">
                         0%
-                    </div>
+                    </strong>
 
-                    <p class="result-label">
+                    <small>
                         Simulated relative output
-                    </p>
+                    </small>
 
                 </div>
 
 
                 <div class="result-card improvement">
 
-                    <h3>Improvement</h3>
+                    <span>
+                        Expected Improvement
+                    </span>
 
-                    <div
-                        id="improvement"
-                        class="result-value">
+                    <strong id="improvement">
                         +0%
-                    </div>
+                    </strong>
 
-                    <p class="result-label">
+                    <small>
                         Tracking advantage
-                    </p>
+                    </small>
 
                 </div>
 
             </div>
 
 
-            <!-- Graph -->
+            <!-- ==================== GRAPH ==================== -->
 
             <div class="graph-container">
 
-                <h2>Relative Output Comparison</h2>
-
-                <p class="graph-subtitle">
-                    Conceptual comparison of reference output and
-                    dual-axis tracking performance
-                </p>
+                <h2>
+                    Relative Output Comparison
+                </h2>
 
                 <canvas
                     id="comparisonGraph"
-                    width="900"
-                    height="450">
+                    width="1000"
+                    height="420">
                 </canvas>
+
+                <div class="legend">
+
+                    <div>
+                        <span class="legend-line tracking"></span>
+                        Dual-Axis Tracking
+                    </div>
+
+                    <div>
+                        <span class="legend-line reference"></span>
+                        Reference Output
+                    </div>
+
+                </div>
 
             </div>
 
 
-            <!-- Conclusion -->
+            <!-- ==================== CONCLUSION ==================== -->
 
             <div class="conclusion">
 
+                <h2>
+                    Conclusion
+                </h2>
+
                 <p>
-
-                    <strong>Conclusion:</strong>
-
-                    The dual-axis tracking system continuously adjusts
-                    the panel orientation toward the Sun, maintaining
-                    better sunlight alignment and increasing the
-                    simulated energy output compared with the reference
-                    configuration.
-
+                    The dual-axis tracking system continuously
+                    adjusts the panel orientation toward the Sun,
+                    maintaining better sunlight alignment throughout
+                    the simulated day.
                 </p>
 
-
-                <p class="research-note">
-
-                    The simulated improvement is intentionally kept
-                    within an approximate 20–30% range as a conceptual
-                    representation of the trend observed in the
-                    reviewed literature. Actual performance varies
-                    with location, weather, system configuration and
-                    operating conditions.
-
+                <p>
+                    The simulation represents an expected improvement
+                    of approximately <strong>20–30%</strong> in energy
+                    generation compared with the reference configuration.
                 </p>
+
+                <small>
+                    This is a conceptual simulation. Actual performance
+                    depends on location, weather, panel characteristics,
+                    installation and operating conditions.
+                </small>
 
             </div>
 
+
+            <button
+                id="restartFromResults"
+                class="btn-control">
+
+                ↻ RUN AGAIN
+
+            </button>
+
         </div>
 
-    </div>
+    </section>
 
-
-    <!-- JavaScript -->
 
     <script src="script.js"></script>
 
