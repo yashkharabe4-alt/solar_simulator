@@ -31,25 +31,51 @@ class SolarTrackingSimulator {
             this.canvas.getContext("2d");
 
 
-        // ==================== STATE ====================
+        // ==================== SIMULATION STATE ====================
 
         this.isRunning = false;
 
         this.simulationTime = 0;
 
-        // 40-second simulation
         this.simulationDuration = 40;
 
         this.lastTime = performance.now();
 
 
-        // ==================== PANEL ====================
+        // ==================== SUN ====================
 
         this.sunAngle = 0;
 
-        // Only the panel rotates.
-        // The pivot and support remain fixed.
+
+        // ==================== PANEL ====================
+
         this.panelAngle = -20;
+
+
+        /*
+         * User-controlled tracking speed.
+         *
+         * 1x = normal
+         * 2x = faster
+         * 3x = very fast
+         * 4x = aggressive
+         * 5x = maximum
+         */
+
+        this.rotationSpeeds = [
+            1,
+            2,
+            3,
+            4,
+            5
+        ];
+
+        this.rotationSpeedIndex = 0;
+
+        this.rotationSpeed =
+            this.rotationSpeeds[
+                this.rotationSpeedIndex
+            ];
 
 
         // ==================== DATA ====================
@@ -75,18 +101,97 @@ class SolarTrackingSimulator {
             "click",
             () => this.startSimulation()
         );
+
+
+        // Create speed button
+        this.createSpeedButton();
     }
 
 
-    // ==================== START ====================
+    // =========================================================
+    // SPEED BUTTON
+    // =========================================================
+
+    createSpeedButton() {
+
+        const controlBar =
+            document.querySelector(".control-bar");
+
+
+        if (!controlBar) {
+            return;
+        }
+
+
+        const speedButton =
+            document.createElement("button");
+
+
+        speedButton.id =
+            "rotationSpeedBtn";
+
+
+        speedButton.className =
+            "btn-control";
+
+
+        speedButton.textContent =
+            "🔄 Rotation Speed: 1×";
+
+
+        speedButton.addEventListener(
+            "click",
+            () => {
+
+                this.rotationSpeedIndex++;
+
+                if (
+                    this.rotationSpeedIndex >=
+                    this.rotationSpeeds.length
+                ) {
+
+                    this.rotationSpeedIndex = 0;
+                }
+
+
+                this.rotationSpeed =
+                    this.rotationSpeeds[
+                        this.rotationSpeedIndex
+                    ];
+
+
+                speedButton.textContent =
+                    "🔄 Rotation Speed: " +
+                    this.rotationSpeed +
+                    "×";
+            }
+        );
+
+
+        controlBar.appendChild(
+            speedButton
+        );
+    }
+
+
+    // =========================================================
+    // START
+    // =========================================================
 
     startSimulation() {
 
-        this.landingPage.classList.add("hidden");
+        this.landingPage.classList.add(
+            "hidden"
+        );
 
-        this.resultsPage.classList.add("hidden");
+        this.resultsPage.classList.add(
+            "hidden"
+        );
 
-        this.simulationPage.classList.remove("hidden");
+        this.simulationPage.classList.remove(
+            "hidden"
+        );
+
 
         this.isRunning = true;
 
@@ -96,31 +201,46 @@ class SolarTrackingSimulator {
 
         this.panelAngle = -20;
 
+
         this.trackingData = [];
 
         this.referenceData = [];
 
-        this.lastTime = performance.now();
+
+        this.lastTime =
+            performance.now();
+
 
         this.animate();
     }
 
 
-    // ==================== STOP ====================
+    // =========================================================
+    // STOP
+    // =========================================================
 
     stopSimulation() {
 
         this.isRunning = false;
 
-        this.simulationPage.classList.add("hidden");
 
-        this.resultsPage.classList.add("hidden");
+        this.simulationPage.classList.add(
+            "hidden"
+        );
 
-        this.landingPage.classList.remove("hidden");
+        this.resultsPage.classList.add(
+            "hidden"
+        );
+
+        this.landingPage.classList.remove(
+            "hidden"
+        );
     }
 
 
-    // ==================== UPDATE ====================
+    // =========================================================
+    // UPDATE
+    // =========================================================
 
     update(deltaTime) {
 
@@ -129,11 +249,15 @@ class SolarTrackingSimulator {
         }
 
 
+        // Simulation time
+
         this.simulationTime +=
             deltaTime / 1000;
 
 
-        // ==================== END ====================
+        // =====================================================
+        // END OF SIMULATION
+        // =====================================================
 
         if (
             this.simulationTime >=
@@ -151,26 +275,33 @@ class SolarTrackingSimulator {
         }
 
 
-        // ==================== PROGRESS ====================
+        // =====================================================
+        // SIMULATION PROGRESS
+        // =====================================================
 
         const progress =
             this.simulationTime /
             this.simulationDuration;
 
 
-        // ==================== SUN MOVEMENT ====================
+        // =====================================================
+        // SUN ANGLE
+        // =====================================================
 
         this.sunAngle =
             progress * 180;
 
 
-        // ==================== FIXED PIVOT ====================
+        // =====================================================
+        // FIXED PANEL PIVOT
+        // =====================================================
 
         const canvasWidth =
             this.canvas.width;
 
         const canvasHeight =
             this.canvas.height;
+
 
         const pivotX =
             canvasWidth * 0.50;
@@ -179,25 +310,52 @@ class SolarTrackingSimulator {
             canvasHeight * 0.67;
 
 
-        // ==================== SUN POSITION ====================
+        // =====================================================
+        // SUN POSITION
+        // =====================================================
+
+        /*
+         * IMPORTANT:
+         *
+         * The Sun now follows a clean arc across
+         * the upper portion of the sky.
+         *
+         * It does NOT move toward the panel.
+         */
 
         const sunX =
             canvasWidth *
             (
-                0.16 +
-                progress * 0.68
+                0.10 +
+                progress * 0.80
             );
 
+
+        /*
+         * At sunrise and sunset:
+         *
+         *     y ≈ 0.24h
+         *
+         * At midday:
+         *
+         *     y ≈ 0.13h
+         *
+         * Smaller Y = higher in the sky.
+         */
+
         const sunY =
-            canvasHeight * 0.20 +
-            Math.sin(
-                progress * Math.PI
-            ) *
             canvasHeight *
-            0.15;
+            (
+                0.24 -
+                Math.sin(
+                    progress * Math.PI
+                ) * 0.11
+            );
 
 
-        // ==================== SUN-BASED PANEL TRACKING ====================
+        // =====================================================
+        // SUN → PANEL VECTOR
+        // =====================================================
 
         const dx =
             sunX - pivotX;
@@ -205,6 +363,15 @@ class SolarTrackingSimulator {
         const dy =
             sunY - pivotY;
 
+
+        // =====================================================
+        // TARGET PANEL ANGLE
+        // =====================================================
+
+        /*
+         * Calculate the orientation required
+         * for the panel to face the Sun.
+         */
 
         let targetPanelAngle =
             Math.atan2(
@@ -215,7 +382,7 @@ class SolarTrackingSimulator {
             Math.PI;
 
 
-        // Reasonable mechanical rotation range
+        // Mechanical limits
 
         targetPanelAngle =
             Math.max(
@@ -227,17 +394,35 @@ class SolarTrackingSimulator {
             );
 
 
-        // ==================== PANEL ROTATION SPEED ====================
+        // =====================================================
+        // PANEL TRACKING
+        // =====================================================
 
         /*
-         * Increased from 0.035 to 0.06.
+         * Base tracking response.
          *
-         * This makes the panel visibly follow
-         * the Sun faster while keeping the
-         * movement smooth.
+         * The button multiplies this value.
          */
 
-        const trackingSpeed = 0.06;
+        const baseTrackingSpeed =
+            0.045;
+
+
+        const trackingSpeed =
+            baseTrackingSpeed *
+            this.rotationSpeed;
+
+
+        /*
+         * Prevent the interpolation factor
+         * from becoming unstable at high speeds.
+         */
+
+        const limitedTrackingSpeed =
+            Math.min(
+                trackingSpeed,
+                0.35
+            );
 
 
         this.panelAngle +=
@@ -245,10 +430,12 @@ class SolarTrackingSimulator {
                 targetPanelAngle -
                 this.panelAngle
             ) *
-            trackingSpeed;
+            limitedTrackingSpeed;
 
 
-        // ==================== ALIGNMENT ====================
+        // =====================================================
+        // ALIGNMENT
+        // =====================================================
 
         const trackingError =
             Math.abs(
@@ -272,12 +459,14 @@ class SolarTrackingSimulator {
             );
 
 
-        // ==================== REFERENCE OUTPUT ====================
+        // =====================================================
+        // REFERENCE OUTPUT
+        // =====================================================
 
         /*
-         * Normalized conceptual output.
+         * Normalized conceptual generation.
          *
-         * No unrealistic 1000 W values.
+         * This avoids unrealistic 1000 W values.
          */
 
         const referenceOutput =
@@ -288,11 +477,13 @@ class SolarTrackingSimulator {
             );
 
 
-        // ==================== DUAL-AXIS OUTPUT ====================
+        // =====================================================
+        // DUAL-AXIS IMPROVEMENT
+        // =====================================================
 
         /*
-         * Expected improvement:
-         * approximately 20–30%.
+         * Expected improvement remains around
+         * 20–30%.
          */
 
         const improvementFactor =
@@ -308,14 +499,15 @@ class SolarTrackingSimulator {
             improvementFactor;
 
 
-        // ==================== STORE DATA ====================
+        // =====================================================
+        // SAVE DATA
+        // =====================================================
 
         this.referenceData.push({
 
             time: progress,
 
             power: referenceOutput
-
         });
 
 
@@ -324,54 +516,86 @@ class SolarTrackingSimulator {
             time: progress,
 
             power: trackingOutput
-
         });
 
 
-        // ==================== UPDATE STATISTICS ====================
+        // =====================================================
+        // UPDATE UI
+        // =====================================================
 
-        document.getElementById(
-            "sunAngle"
-        ).textContent =
-            Math.round(
-                this.sunAngle
-            ) + "°";
-
-
-        document.getElementById(
-            "panelAngle"
-        ).textContent =
-            Math.round(
-                this.panelAngle
-            ) + "°";
+        const sunAngleElement =
+            document.getElementById(
+                "sunAngle"
+            );
 
 
-        document.getElementById(
-            "alignment"
-        ).textContent =
-            "≈ " +
-            Math.round(
-                alignment
-            ) + "°";
+        const panelAngleElement =
+            document.getElementById(
+                "panelAngle"
+            );
 
 
-        document.getElementById(
-            "powerOutput"
-        ).textContent =
-            Math.round(
-                (
-                    trackingOutput /
-                    referenceOutput
-                ) * 100
-            ) + "%";
+        const alignmentElement =
+            document.getElementById(
+                "alignment"
+            );
 
 
-        // ==================== PROGRESS BAR ====================
+        const powerOutputElement =
+            document.getElementById(
+                "powerOutput"
+            );
+
+
+        if (sunAngleElement) {
+
+            sunAngleElement.textContent =
+                Math.round(
+                    this.sunAngle
+                ) + "°";
+        }
+
+
+        if (panelAngleElement) {
+
+            panelAngleElement.textContent =
+                Math.round(
+                    this.panelAngle
+                ) + "°";
+        }
+
+
+        if (alignmentElement) {
+
+            alignmentElement.textContent =
+                "≈ " +
+                Math.round(
+                    alignment
+                ) + "°";
+        }
+
+
+        if (powerOutputElement) {
+
+            powerOutputElement.textContent =
+                Math.round(
+                    (
+                        trackingOutput /
+                        referenceOutput
+                    ) * 100
+                ) + "%";
+        }
+
+
+        // =====================================================
+        // PROGRESS
+        // =====================================================
 
         const progressBar =
             document.getElementById(
                 "progressBar"
             );
+
 
         const progressText =
             document.getElementById(
@@ -398,21 +622,27 @@ class SolarTrackingSimulator {
     }
 
 
-    // ==================== RENDER ====================
+    // =========================================================
+    // RENDER
+    // =========================================================
 
     render() {
 
         const ctx =
             this.ctx;
 
+
         const w =
             this.canvas.width;
+
 
         const h =
             this.canvas.height;
 
 
-        // ==================== SKY ====================
+        // =====================================================
+        // SKY
+        // =====================================================
 
         const sky =
             ctx.createLinearGradient(
@@ -447,7 +677,9 @@ class SolarTrackingSimulator {
         );
 
 
-        // ==================== SUN ====================
+        // =====================================================
+        // SUN
+        // =====================================================
 
         const progress =
             this.sunAngle /
@@ -457,18 +689,19 @@ class SolarTrackingSimulator {
         const sunX =
             w *
             (
-                0.16 +
-                progress * 0.68
+                0.10 +
+                progress * 0.80
             );
 
 
         const sunY =
-            h * 0.20 +
-            Math.sin(
-                progress * Math.PI
-            ) *
             h *
-            0.15;
+            (
+                0.24 -
+                Math.sin(
+                    progress * Math.PI
+                ) * 0.11
+            );
 
 
         this.drawSun(
@@ -477,16 +710,21 @@ class SolarTrackingSimulator {
         );
 
 
-        // ==================== FIXED PIVOT ====================
+        // =====================================================
+        // FIXED PIVOT
+        // =====================================================
 
         const pivotX =
             w * 0.50;
+
 
         const pivotY =
             h * 0.67;
 
 
-        // ==================== SUNLIGHT ====================
+        // =====================================================
+        // SUNLIGHT
+        // =====================================================
 
         this.drawSunRays(
             sunX,
@@ -496,7 +734,9 @@ class SolarTrackingSimulator {
         );
 
 
-        // ==================== FIXED SUPPORT ====================
+        // =====================================================
+        // FIXED SUPPORT
+        // =====================================================
 
         this.drawSupport(
             pivotX,
@@ -504,7 +744,9 @@ class SolarTrackingSimulator {
         );
 
 
-        // ==================== ROTATING PANEL ====================
+        // =====================================================
+        // ROTATING PANEL
+        // =====================================================
 
         this.drawPanel(
             pivotX,
@@ -513,7 +755,9 @@ class SolarTrackingSimulator {
         );
 
 
-        // ==================== FIXED PIVOT ====================
+        // =====================================================
+        // FIXED PIVOT
+        // =====================================================
 
         this.drawPivot(
             pivotX,
@@ -522,7 +766,9 @@ class SolarTrackingSimulator {
     }
 
 
-    // ==================== SUN ====================
+    // =========================================================
+    // SUN
+    // =========================================================
 
     drawSun(
         x,
@@ -533,6 +779,8 @@ class SolarTrackingSimulator {
             this.ctx;
 
 
+        // Glow
+
         const glow =
             ctx.createRadialGradient(
                 x,
@@ -540,7 +788,7 @@ class SolarTrackingSimulator {
                 0,
                 x,
                 y,
-                105
+                110
             );
 
 
@@ -561,10 +809,10 @@ class SolarTrackingSimulator {
 
 
         ctx.fillRect(
-            x - 105,
-            y - 105,
-            210,
-            210
+            x - 110,
+            y - 110,
+            220,
+            220
         );
 
 
@@ -600,7 +848,9 @@ class SolarTrackingSimulator {
     }
 
 
-    // ==================== FIXED SUPPORT ====================
+    // =========================================================
+    // FIXED SUPPORT
+    // =========================================================
 
     drawSupport(
         x,
@@ -612,56 +862,67 @@ class SolarTrackingSimulator {
 
 
         /*
-         * The support NEVER rotates.
+         * This axis NEVER rotates.
          */
 
         ctx.strokeStyle =
             "#2f404d";
 
+
         ctx.lineWidth = 12;
 
-        ctx.lineCap = "round";
+
+        ctx.lineCap =
+            "round";
 
 
-        // Fixed vertical axis
+        // Vertical axis
 
         ctx.beginPath();
+
 
         ctx.moveTo(
             x,
             y
         );
 
+
         ctx.lineTo(
             x,
             y + 120
         );
 
+
         ctx.stroke();
 
 
-        // Fixed base
+        // Base
 
         ctx.lineWidth = 14;
 
 
         ctx.beginPath();
 
+
         ctx.moveTo(
             x - 70,
             y + 120
         );
+
 
         ctx.lineTo(
             x + 70,
             y + 120
         );
 
+
         ctx.stroke();
     }
 
 
-    // ==================== ROTATING PANEL ====================
+    // =========================================================
+    // SOLAR PANEL
+    // =========================================================
 
     drawPanel(
         pivotX,
@@ -673,16 +934,16 @@ class SolarTrackingSimulator {
             this.ctx;
 
 
-        // Wider panel
-
         const panelWidth = 340;
 
         const panelHeight = 165;
 
 
         /*
-         * Only the panel rotates.
-         * The fixed axis stays stationary.
+         * ONLY this assembly rotates.
+         *
+         * The support remains outside
+         * this rotated canvas context.
          */
 
         ctx.save();
@@ -701,12 +962,16 @@ class SolarTrackingSimulator {
         );
 
 
-        // ==================== MOUNTING ARM ====================
+        // =====================================================
+        // MOUNTING ARM
+        // =====================================================
 
         ctx.strokeStyle =
             "#34495e";
 
+
         ctx.lineWidth = 12;
+
 
         ctx.lineCap =
             "round";
@@ -730,7 +995,9 @@ class SolarTrackingSimulator {
         ctx.stroke();
 
 
-        // ==================== PANEL BODY ====================
+        // =====================================================
+        // PANEL BODY
+        // =====================================================
 
         ctx.fillStyle =
             "#286da8";
@@ -744,10 +1011,13 @@ class SolarTrackingSimulator {
         );
 
 
-        // ==================== PANEL BORDER ====================
+        // =====================================================
+        // PANEL BORDER
+        // =====================================================
 
         ctx.strokeStyle =
             "#173b5a";
+
 
         ctx.lineWidth = 6;
 
@@ -760,15 +1030,18 @@ class SolarTrackingSimulator {
         );
 
 
-        // ==================== SOLAR CELLS ====================
+        // =====================================================
+        // SOLAR CELLS
+        // =====================================================
 
         ctx.strokeStyle =
             "rgba(255,255,255,0.38)";
 
+
         ctx.lineWidth = 1.2;
 
 
-        // Vertical divisions
+        // Vertical cells
 
         const columns = 6;
 
@@ -806,7 +1079,7 @@ class SolarTrackingSimulator {
         }
 
 
-        // Horizontal divisions
+        // Horizontal cells
 
         const rows = 3;
 
@@ -848,7 +1121,9 @@ class SolarTrackingSimulator {
     }
 
 
-    // ==================== FIXED PIVOT ====================
+    // =========================================================
+    // FIXED PIVOT
+    // =========================================================
 
     drawPivot(
         x,
@@ -898,7 +1173,9 @@ class SolarTrackingSimulator {
     }
 
 
-    // ==================== SUN RAYS ====================
+    // =========================================================
+    // SUN RAYS
+    // =========================================================
 
     drawSunRays(
         sunX,
@@ -913,6 +1190,7 @@ class SolarTrackingSimulator {
 
         const dx =
             pivotX - sunX;
+
 
         const dy =
             pivotY - sunY;
@@ -930,11 +1208,14 @@ class SolarTrackingSimulator {
         const px =
             -dy / distance;
 
+
         const py =
             dx / distance;
 
 
-        // ==================== SOFT LIGHT BEAM ====================
+        // =====================================================
+        // SOFT SUNLIGHT BEAM
+        // =====================================================
 
         const beamWidth = 75;
 
@@ -950,19 +1231,19 @@ class SolarTrackingSimulator {
 
         gradient.addColorStop(
             0,
-            "rgba(255,204,40,0.20)"
+            "rgba(255,204,40,0.18)"
         );
 
 
         gradient.addColorStop(
             0.6,
-            "rgba(255,204,40,0.10)"
+            "rgba(255,204,40,0.09)"
         );
 
 
         gradient.addColorStop(
             1,
-            "rgba(255,204,40,0.02)"
+            "rgba(255,204,40,0.015)"
         );
 
 
@@ -1003,10 +1284,13 @@ class SolarTrackingSimulator {
 
         ctx.closePath();
 
+
         ctx.fill();
 
 
-        // ==================== LIGHT RAYS ====================
+        // =====================================================
+        // LIGHT RAYS
+        // =====================================================
 
         const rayCount = 7;
 
@@ -1025,7 +1309,7 @@ class SolarTrackingSimulator {
 
 
             ctx.strokeStyle =
-                "rgba(255,190,20,0.32)";
+                "rgba(255,190,20,0.30)";
 
 
             ctx.lineWidth = 2;
@@ -1065,13 +1349,16 @@ class SolarTrackingSimulator {
     }
 
 
-    // ==================== RESULTS ====================
+    // =========================================================
+    // RESULTS
+    // =========================================================
 
     showResults() {
 
         this.simulationPage.classList.add(
             "hidden"
         );
+
 
         this.resultsPage.classList.remove(
             "hidden"
@@ -1082,7 +1369,9 @@ class SolarTrackingSimulator {
     }
 
 
-    // ==================== RESULTS DATA ====================
+    // =========================================================
+    // RESULTS DATA
+    // =========================================================
 
     displayResults() {
 
@@ -1120,36 +1409,59 @@ class SolarTrackingSimulator {
             ) * 100;
 
 
-        document.getElementById(
-            "trackingAvg"
-        ).textContent =
-            Math.round(
-                trackingAverage
-            ) + "%";
+        const trackingElement =
+            document.getElementById(
+                "trackingAvg"
+            );
 
 
-        document.getElementById(
-            "fixedAvg"
-        ).textContent =
-            Math.round(
-                referenceAverage
-            ) + "%";
+        const referenceElement =
+            document.getElementById(
+                "fixedAvg"
+            );
 
 
-        document.getElementById(
-            "improvement"
-        ).textContent =
-            "+" +
-            Math.round(
-                improvement
-            ) + "%";
+        const improvementElement =
+            document.getElementById(
+                "improvement"
+            );
+
+
+        if (trackingElement) {
+
+            trackingElement.textContent =
+                Math.round(
+                    trackingAverage
+                ) + "%";
+        }
+
+
+        if (referenceElement) {
+
+            referenceElement.textContent =
+                Math.round(
+                    referenceAverage
+                ) + "%";
+        }
+
+
+        if (improvementElement) {
+
+            improvementElement.textContent =
+                "+" +
+                Math.round(
+                    improvement
+                ) + "%";
+        }
 
 
         this.drawGraph();
     }
 
 
-    // ==================== GRAPH ====================
+    // =========================================================
+    // GRAPH
+    // =========================================================
 
     drawGraph() {
 
@@ -1159,12 +1471,18 @@ class SolarTrackingSimulator {
             );
 
 
+        if (!canvas) {
+            return;
+        }
+
+
         const ctx =
             canvas.getContext("2d");
 
 
         const w =
             canvas.width;
+
 
         const h =
             canvas.height;
@@ -1211,10 +1529,13 @@ class SolarTrackingSimulator {
             );
 
 
-        // ==================== GRID ====================
+        // =====================================================
+        // GRID
+        // =====================================================
 
         ctx.strokeStyle =
             "#e6ecef";
+
 
         ctx.lineWidth = 1;
 
@@ -1277,7 +1598,7 @@ class SolarTrackingSimulator {
         }
 
 
-        // Tracking
+        // Tracking line
 
         this.drawGraphLine(
             ctx,
@@ -1291,7 +1612,7 @@ class SolarTrackingSimulator {
         );
 
 
-        // Reference
+        // Reference line
 
         this.drawGraphLine(
             ctx,
@@ -1306,7 +1627,9 @@ class SolarTrackingSimulator {
     }
 
 
-    // ==================== GRAPH LINE ====================
+    // =========================================================
+    // GRAPH LINE
+    // =========================================================
 
     drawGraphLine(
         ctx,
@@ -1379,7 +1702,9 @@ class SolarTrackingSimulator {
     }
 
 
-    // ==================== ANIMATION ====================
+    // =========================================================
+    // ANIMATION
+    // =========================================================
 
     animate() {
 
@@ -1419,7 +1744,9 @@ class SolarTrackingSimulator {
 }
 
 
-// ==================== INITIALIZATION ====================
+// =============================================================
+// INITIALIZATION
+// =============================================================
 
 document.addEventListener(
     "DOMContentLoaded",
